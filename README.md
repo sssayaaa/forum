@@ -1,7 +1,4 @@
 # Forum-image-upload Web Application
-* `compygirl` - Aigerim Yessenbayeva
-
-
 
 # Forum Advanced-Features
 You must follow the same principles as the first subject.

@@ -54,7 +54,7 @@ git clone git@github.com:sssayaaa/forum.git
 Go to the downloaded repository:
 
 ```CMD/Terminal
-cd forums
+cd forum
 ```
 
 Run a Server:

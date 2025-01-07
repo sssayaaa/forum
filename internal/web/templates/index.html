@@ -85,39 +85,38 @@
 
 
    
-    .notification-btn {
+        .notification-btn {
         position: relative;
         display: inline-block;
     }
 
-    .notification-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        padding: 3px 6px;
-        border-radius: 50%;
-        background: red;
-        color: white;
-        font-size: 12px;
-        display: none; /* Hidden by default */
-    }
-
-    .notification-badge.show {
-        display: block;
-    }
-
-    .seen-btn {
-        padding: 4px 8px;
-        margin-left: 10px;
-        background-color: #4CAF50;
+    .notification-btn button {
+        padding: 8px 16px;
+        background-color: #04AA6D;
         color: white;
         border: none;
         border-radius: 4px;
         cursor: pointer;
     }
 
-    .seen-btn:hover {
-        background-color: #45a049;
+    .notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        padding: 4px 8px;
+        border-radius: 50%;
+        background: red;
+        color: white;
+        font-size: 12px;
+        display: none; /* Hidden by default */
+        min-width: 16px;
+        height: 16px;
+        text-align: center;
+        line-height: 16px;
+    }
+
+    .notification-badge.show {
+        display: block;
     }
     </style>
 </head>
@@ -143,34 +142,41 @@
         {{ if  .LoggedIn}}
         <h2>Welcome </h2>
         {{$userID:=.User.UserUserID}}
-        <button onclick="location.href='/logout'">Logout</button><br>
-        <br>
-        <!-- <button onclick="location.href='/notifications?quserID={{$userID}}'">Notifications</button><br> -->
+        <!-- notif button -->
         <div class="notification-btn">
             <button onclick="location.href='/notifications?quserID={{$userID}}'">Notifications</button>
             <span class="notification-badge" id="notificationBadge"></span>
         </div>
-
-
-        <!-- shfkshfkvhjvhddddddddddddd -->
+    
         <script>
         function checkNewNotifications() {
             fetch('/api/check-notifications?userID={{$userID}}')
-                .then(response => response.json())
-                .then(data => {
-                    const badge = document.getElementById('notificationBadge');
-                    if (data.count > 0) {
-                        badge.textContent = data.count;
-                        badge.classList.add('show');
-                    } else {
-                        badge.classList.remove('show');
+                .then(response => {
+                    if (response.status === 429) { // Too Many Requests
+                        console.log('Rate limit reached, will try again later');
+                        return;
                     }
-                });
+                    return response.json();
+                })
+                .then(data => {
+                    if (data) {
+                        const badge = document.getElementById('notificationBadge');
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.classList.add('show');
+                        } else {
+                            badge.classList.remove('show');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error checking notifications:', error));
         }
     
-        // Check for notifications when page loads and every 30 seconds
+        // Check notifications once when page loads
         checkNewNotifications();
-        setInterval(checkNewNotifications, 30000);
+        
+        // Then check every 2 minutes instead of every 30 seconds
+        setInterval(checkNewNotifications, 120000); // 120000 ms = 2 minutes
         </script>
 
         <!-- shfkshfkvhjdddddddddddddddddddh -->

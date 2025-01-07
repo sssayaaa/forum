@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"crypto/tls"
+	"database/sql"
 	"forum/cmd/config"
 	repository "forum/internal/database"
 	database "forum/internal/database/migration"
@@ -17,15 +18,18 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func InitServer(conf *config.Config, ctx context.Context) *Server {
+func InitServer(conf *config.Config, ctx context.Context) (*Server, *sql.DB) {
+	// Create DB connection
 	db, err := database.CreateDb(conf.DbDriver, conf.DbPath, ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	repository := repository.NewRepository(db) // stores the db in the repository
 	service := service.NewService(repository)
 	handler := handlers.NewHandler(service)
 
+	// Server configuration
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "localhost" + conf.Address // Explicitly bind to localhost
@@ -43,6 +47,7 @@ func InitServer(conf *config.Config, ctx context.Context) *Server {
 		Certificates:             []tls.Certificate{cert}, // Add the certificate pair
 	}
 
+	// Initialize Server object
 	ServerObj := Server{
 		httpServer: &http.Server{
 			Addr:      port,
@@ -51,10 +56,22 @@ func InitServer(conf *config.Config, ctx context.Context) *Server {
 		},
 	}
 
-	return &ServerObj
+	// Return server object and the DB connection
+	return &ServerObj, db
 }
 
 func (server *Server) Start() error {
 	log.Println("Starting API server at https://" + server.httpServer.Addr)
 	return server.httpServer.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+}
+
+func (server *Server) Shutdown(ctx context.Context, db *sql.DB) error {
+	// Close the database connection
+	if err := db.Close(); err != nil {
+		log.Printf("Error closing database connection: %v", err)
+		return err
+	}
+
+	// Gracefully shutdown the HTTP server
+	return server.httpServer.Shutdown(ctx)
 }

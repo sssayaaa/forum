@@ -1,12 +1,14 @@
 # Forum 01 project
 
+### Forum authentification
+
 ### Forum image upload
 
 ### Forum advanced features
 
-### Forum Moderation
+### Forum moderation
 
-### Forum Security Project
+### Forum security
 
 For communication within the forum:
 

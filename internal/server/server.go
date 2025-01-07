@@ -56,5 +56,5 @@ func InitServer(conf *config.Config, ctx context.Context) *Server {
 
 func (server *Server) Start() error {
 	log.Println("Starting API server at https://" + server.httpServer.Addr)
-	return server.httpServer.ListenAndServeTLS("", "")
+	return server.httpServer.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 }

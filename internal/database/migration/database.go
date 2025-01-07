@@ -101,6 +101,7 @@ func CreateAllTables(ctx context.Context, db *sql.DB) error {
 			post_id INTEGER,
 			user_id INTEGER,
 			reaction INTEGER,
+			is_seen BOOLEAN DEFAULT 0,
 			FOREIGN KEY (post_id) REFERENCES posts (id),
 			FOREIGN KEY (user_id) REFERENCES users (id)
 		)

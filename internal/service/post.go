@@ -327,3 +327,11 @@ func (postObj *PostServiceImpl) GetAllMyPostsCommentedByOtherUsers(userID int) (
 	}
 	return postVotes, nil
 }
+
+func (p *PostServiceImpl) CountUnseenNotifications(userID int) (int, error) {
+	return p.repo.CountUnseenNotifications(userID)
+}
+
+func (p *PostServiceImpl) MarkNotificationAsSeen(notificationID int) error {
+	return p.repo.MarkNotificationAsSeen(notificationID)
+}

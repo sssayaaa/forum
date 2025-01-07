@@ -385,3 +385,26 @@ func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*
 	return PostVotes, nil
 }
 
+func (postObj *PostRepoImpl) CountUnseenNotifications(userID int) (int, error) {
+	var count int
+	query := `
+        SELECT COUNT(*) 
+        FROM post_votes 
+        WHERE user_id = ? AND is_seen = 0
+    `
+	err := postObj.db.QueryRow(query, userID).Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
+func (postObj *PostRepoImpl) MarkNotificationAsSeen(notificationID int) error {
+	query := `
+        UPDATE post_votes 
+        SET is_seen = 1 
+        WHERE post_votes_id = ?
+    `
+	_, err := postObj.db.Exec(query, notificationID)
+	return err
+}

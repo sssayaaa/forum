@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"forum/internal/models"
 	helpers "forum/internal/web/handlers/helpers"
@@ -691,35 +692,78 @@ func (h *Handler) ShowMyCommentsWithPostsHandler(w http.ResponseWriter, r *http.
 
 func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Request) {
 	path := "internal/web/templates/notifications.html"
+
 	switch r.Method {
 	case "GET":
 		type templateData struct {
 			PostVotes  []*models.PostVotes
 			PostVotes2 []*models.PostVotes
 		}
+
 		userID := r.FormValue("quserID")
 		intuserID, err := strconv.Atoi(userID)
 		if err != nil {
 			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 			return
 		}
+
 		postVotes, err := h.service.PostServiceInterface.GetAllMyPostsLikedByOtherUsers(intuserID)
 		if err != nil {
 			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 			return
 		}
+
+		// Enhance post votes with username and post title
 		for _, postVote := range postVotes {
+			// Set reaction string
 			if postVote.Reaction == 1 {
 				postVote.ReactionStr = "liked"
 			} else if postVote.Reaction == -1 {
 				postVote.ReactionStr = "disliked"
 			}
+
+			// Get username
+			reactor, err := h.service.UserServiceInterface.GetUserByUserID(postVote.UserID)
+			if err != nil {
+				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
+				return
+			}
+			postVote.ReactorUsername = reactor.Username
+
+			// Get post title
+			post, err := h.service.PostServiceInterface.GetPostByID(postVote.PostID)
+			if err != nil {
+				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
+				return
+			}
+			postVote.PostTitle = post.Title
 		}
+
 		postVotes2, err := h.service.PostServiceInterface.GetAllMyPostsCommentedByOtherUsers(intuserID)
 		if err != nil {
 			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 			return
 		}
+
+		// Enhance commented posts with username and post title
+		for _, postVote := range postVotes2 {
+			// Get username
+			reactor, err := h.service.UserServiceInterface.GetUserByUserID(postVote.UserID)
+			if err != nil {
+				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
+				return
+			}
+			postVote.ReactorUsername = reactor.Username
+
+			// Get post title
+			post, err := h.service.PostServiceInterface.GetPostByID(postVote.PostID)
+			if err != nil {
+				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
+				return
+			}
+			postVote.PostTitle = post.Title
+		}
+
 		data := templateData{
 			PostVotes:  postVotes,
 			PostVotes2: postVotes2,
@@ -728,8 +772,49 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 		helpers.RenderTemplate(w, path, data)
 		return
 
+	// case "POST":
+	//     // Handle POST if needed
+
 	default:
 		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("Error in Moderator Request Handler"))
 		return
 	}
+}
+
+func (h *Handler) MarkNotificationSeenHandler(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		NotificationID int `json:"notification_id"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	err := h.service.PostServiceInterface.MarkNotificationAsSeen(req.NotificationID)
+	if err != nil {
+		http.Error(w, "Error marking notification as seen", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]bool{"success": true})
+}
+
+func (h *Handler) CheckNotificationsHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("userID")
+	intUserID, err := strconv.Atoi(userID)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	count, err := h.service.PostServiceInterface.CountUnseenNotifications(intUserID)
+	if err != nil {
+		http.Error(w, "Error checking notifications", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]int{"count": count})
 }

@@ -58,5 +58,9 @@ func (handler *Handler) InitRouter() *http.ServeMux {
 	mux.HandleFunc("/reacted_comments", NewRateLimiter(10, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.ShowMyReactedCommentsHandler))))
 	mux.HandleFunc("/commented_posts", NewRateLimiter(10, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.ShowMyCommentsWithPostsHandler))))
 	mux.HandleFunc("/notifications", NewRateLimiter(10, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.ShowMyNotificationsHandler))))
+	// dfhsdh
+	mux.HandleFunc("/check-notifications", NewRateLimiter(10, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.CheckNotificationsHandler))))
+
+	mux.HandleFunc("/mark-notification-seen", NewRateLimiter(10, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.MarkNotificationSeenHandler))))
 	return mux
 }

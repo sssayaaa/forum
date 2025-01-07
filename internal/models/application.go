@@ -133,9 +133,12 @@ type CommentsWithPosts struct {
 }
 
 type PostVotes struct {
-	PostVotesID int
-	PostID      int
-	UserID      int
-	Reaction    int
-	ReactionStr string
+	PostVotesID     int
+	PostID          int
+	UserID          int
+	Reaction        int
+	ReactionStr     string
+	IsSeen          bool
+	ReactorUsername string
+	PostTitle       string
 }

@@ -95,19 +95,48 @@ th {
 
     <tbody>
       {{range .PostVotes}}
-      <tr>
-        <td>Your post with PostID - {{.PostID}} was {{.ReactionStr}} by user with UserID - {{.UserID}}</td>
+<tr>
+    <td>Your post {{.PostTitle}} was {{.ReactionStr}} by user {{.ReactorUsername}}</td>
+    <td>
+        {{if not .IsSeen}}
+            <button class="seen-btn" onclick="markAsSeen('{{.PostVotesID}}')">Mark as seen</button>
+        {{end}}
+    </td>
+</tr>
+{{end}}
 
-      </tr>
-      {{end}}
-      {{range .PostVotes2}}
-      <tr>
-        <td>Your post with PostID - {{.PostID}} was commented by user with UserID - {{.UserID}}</td>
-
-      </tr>
-      {{end}}
+{{range .PostVotes2}}
+<tr>
+    <td>Your post {{.PostTitle}} was commented by user {{.ReactorUsername}}</td>
+    <td>
+        {{if not .IsSeen}}
+            <button class="seen-btn" onclick="markAsSeen('{{.PostVotesID}}')">Mark as seen</button>
+        {{end}}
+    </td>
+</tr>
+{{end}}
     </tbody>
   </table>
+  
+  <script>
+    function markAsSeen(notificationId) {
+    fetch('/api/mark-notification-seen', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notification_id: parseInt(notificationId) })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Refresh the page to update the notification list
+            location.reload();
+        }
+    });
+}
+    </script>
+
   <button onclick="location.href='/'">Back Main</button><br>
 
 </div>

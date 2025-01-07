@@ -45,6 +45,8 @@ type PostServiceInterface interface {
 	GetMyReactedPosts(int) (map[int]int, error)
 	GetAllMyPostsLikedByOtherUsers(int) ([]*models.PostVotes, error)
 	GetAllMyPostsCommentedByOtherUsers(int) ([]*models.PostVotes, error)
+	CountUnseenNotifications(userID int) (int, error)
+	MarkNotificationAsSeen(notificationID int) error
 }
 
 type CommentServiceInterface interface {

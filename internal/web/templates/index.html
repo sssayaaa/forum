@@ -83,6 +83,42 @@
             margin-top: 10px;
         }
 
+
+   
+    .notification-btn {
+        position: relative;
+        display: inline-block;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        padding: 3px 6px;
+        border-radius: 50%;
+        background: red;
+        color: white;
+        font-size: 12px;
+        display: none; /* Hidden by default */
+    }
+
+    .notification-badge.show {
+        display: block;
+    }
+
+    .seen-btn {
+        padding: 4px 8px;
+        margin-left: 10px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .seen-btn:hover {
+        background-color: #45a049;
+    }
     </style>
 </head>
 <body>
@@ -109,7 +145,39 @@
         {{$userID:=.User.UserUserID}}
         <button onclick="location.href='/logout'">Logout</button><br>
         <br>
-        <button onclick="location.href='/notifications?quserID={{$userID}}'">Notifications</button><br>
+        <!-- <button onclick="location.href='/notifications?quserID={{$userID}}'">Notifications</button><br> -->
+        <div class="notification-btn">
+            <button onclick="location.href='/notifications?quserID={{$userID}}'">Notifications</button>
+            <span class="notification-badge" id="notificationBadge"></span>
+        </div>
+
+
+        <!-- shfkshfkvhjvhddddddddddddd -->
+        <script>
+        function checkNewNotifications() {
+            fetch('/api/check-notifications?userID={{$userID}}')
+                .then(response => response.json())
+                .then(data => {
+                    const badge = document.getElementById('notificationBadge');
+                    if (data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.classList.add('show');
+                    } else {
+                        badge.classList.remove('show');
+                    }
+                });
+        }
+    
+        // Check for notifications when page loads and every 30 seconds
+        checkNewNotifications();
+        setInterval(checkNewNotifications, 30000);
+        </script>
+
+        <!-- shfkshfkvhjdddddddddddddddddddh -->
+
+
+
+
         <br>
         <button onclick="location.href='/created_my_posts?quserID={{$userID}}'">Show activity history</button><br>
         <br>
@@ -330,7 +398,6 @@
         {{end}}
 
     </div>
-
 
 </body>
 </html>

@@ -85,37 +85,37 @@ th {
 
 
 <!-- Add a container for your content with the "content" class -->
-<div class="content">
+<body>
+  <div class="content">
   <table>
-    <thead>
-      <tr>
-        <th>Notifications</th>
-      </tr>
-    </thead>
-    
-    <tbody>
-      {{range .PostVotes}}
-<tr>
-    <td>Your post {{.PostTitle}} was {{.ReactionStr}} by user {{.ReactorUsername}}</td>
-    <td>
-        {{if not .IsSeen}}
-            <button class="seen-btn" onclick="markAsSeen('{{.PostVotesID}}')">Mark as seen</button>
-        {{end}}
-    </td>
-</tr>
-{{end}}
-
-{{range .PostVotes2}}
-<tr>
-    <td>Your post {{.PostTitle}} was commented by user {{.ReactorUsername}}</td>
-    <td>
-        {{if not .IsSeen}}
-            <button class="seen-btn" onclick="markAsSeen('{{.PostVotesID}}')">Mark as seen</button>
-        {{end}}
-    </td>
-</tr>
-{{end}}
-    </tbody>
+  <thead>
+  <tr>
+      <th>Notifications</th>
+      <th>Time</th>
+      <th>Action</th>
+  </tr>
+  </thead>
+  <tbody>
+  {{range .Notifications}}
+  <tr>
+      <td>
+          Your post {{.PostTitle}} was 
+          {{if .ReactionStr}}
+              {{.ReactionStr}}
+          {{else}}
+              commented
+          {{end}}
+          by user {{.ReactorUsername}}
+      </td>
+      <td class="timestamp">{{.Time.Format "2006/01/02 15:04:05"}}</td>
+      <td>
+          {{if not .IsSeen}}
+          <button class="seen-btn" onclick="markAsSeen('{{.PostVotesID}}')">Mark as seen</button>
+          {{end}}
+      </td>
+  </tr>
+  {{end}}
+  </tbody>
   </table>
   
   <script>

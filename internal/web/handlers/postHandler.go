@@ -6,6 +6,7 @@ import (
 	"forum/internal/models"
 	helpers "forum/internal/web/handlers/helpers"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -692,12 +693,10 @@ func (h *Handler) ShowMyCommentsWithPostsHandler(w http.ResponseWriter, r *http.
 
 func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Request) {
 	path := "internal/web/templates/notifications.html"
-
 	switch r.Method {
 	case "GET":
 		type templateData struct {
-			PostVotes  []*models.PostVotes
-			PostVotes2 []*models.PostVotes
+			Notifications []*models.PostVotes // Changed from separate PostVotes fields
 		}
 
 		userID := r.FormValue("quserID")
@@ -707,30 +706,26 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
+		// Get likes/dislikes
 		postVotes, err := h.service.PostServiceInterface.GetAllMyPostsLikedByOtherUsers(intuserID)
 		if err != nil {
 			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		// Enhance post votes with username and post title
+		// Process likes/dislikes
 		for _, postVote := range postVotes {
-			// Set reaction string
 			if postVote.Reaction == 1 {
 				postVote.ReactionStr = "liked"
 			} else if postVote.Reaction == -1 {
 				postVote.ReactionStr = "disliked"
 			}
-
-			// Get username
 			reactor, err := h.service.UserServiceInterface.GetUserByUserID(postVote.UserID)
 			if err != nil {
 				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 				return
 			}
 			postVote.ReactorUsername = reactor.Username
-
-			// Get post title
 			post, err := h.service.PostServiceInterface.GetPostByID(postVote.PostID)
 			if err != nil {
 				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
@@ -739,23 +734,21 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 			postVote.PostTitle = post.Title
 		}
 
+		// Get comments
 		postVotes2, err := h.service.PostServiceInterface.GetAllMyPostsCommentedByOtherUsers(intuserID)
 		if err != nil {
 			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		// Enhance commented posts with username and post title
+		// Process comments
 		for _, postVote := range postVotes2 {
-			// Get username
 			reactor, err := h.service.UserServiceInterface.GetUserByUserID(postVote.UserID)
 			if err != nil {
 				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 				return
 			}
 			postVote.ReactorUsername = reactor.Username
-
-			// Get post title
 			post, err := h.service.PostServiceInterface.GetPostByID(postVote.PostID)
 			if err != nil {
 				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
@@ -764,17 +757,21 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 			postVote.PostTitle = post.Title
 		}
 
+		// Combine and sort notifications
+		allNotifications := append([]*models.PostVotes{}, postVotes...)
+		allNotifications = append(allNotifications, postVotes2...)
+
+		// Sort by time in descending order (newest first)
+		sort.Slice(allNotifications, func(i, j int) bool {
+			return allNotifications[i].Time.After(allNotifications[j].Time)
+		})
+
 		data := templateData{
-			PostVotes:  postVotes,
-			PostVotes2: postVotes2,
+			Notifications: allNotifications,
 		}
 
 		helpers.RenderTemplate(w, path, data)
 		return
-
-	// case "POST":
-	//     // Handle POST if needed
-
 	default:
 		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("Error in Moderator Request Handler"))
 		return

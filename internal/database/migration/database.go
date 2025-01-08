@@ -97,14 +97,15 @@ func CreateAllTables(ctx context.Context, db *sql.DB) error {
 	// create post_votes table
 	if _, err = trans.ExecContext(ctx, `
 		CREATE TABLE IF NOT EXISTS post_votes(
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			post_id INTEGER,
-			user_id INTEGER,
-			reaction INTEGER,
-			is_seen BOOLEAN DEFAULT 0,
-			FOREIGN KEY (post_id) REFERENCES posts (id),
-			FOREIGN KEY (user_id) REFERENCES users (id)
-		)
+    post_votes_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER,
+    user_id INTEGER,
+    reaction INTEGER,
+    is_seen BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES posts (id),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+)
 	`); err != nil {
 		return err
 	}

@@ -341,24 +341,41 @@ func (postObj *PostRepoImpl) GetMyReactedPosts(userID int) (map[int]int, error) 
 
 func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*models.PostVotes, error) {
 	var PostVotes []*models.PostVotes
-	rows, err := postObj.db.Query("SELECT * FROM post_votes WHERE post_id IN (SELECT id FROM posts WHERE user_id = ?)", userID)
+
+	// Explicitly list columns instead of using SELECT *
+	// Add created_at to the SELECT statement
+	query := `
+        SELECT post_votes_id, post_id, user_id, reaction, created_at 
+        FROM post_votes 
+        WHERE post_id IN (SELECT id FROM posts WHERE user_id = ?)
+        ORDER BY created_at DESC` // Add ORDER BY to sort by time
+
+	rows, err := postObj.db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close() // Don't forget to close the rows
 
 	for rows.Next() {
 		var PostVote models.PostVotes
-
-		err = rows.Scan(&PostVote.PostVotesID, &PostVote.PostID, &PostVote.UserID, &PostVote.Reaction)
+		// Add &PostVote.Time to the Scan parameters
+		err = rows.Scan(
+			&PostVote.PostVotesID,
+			&PostVote.PostID,
+			&PostVote.UserID,
+			&PostVote.Reaction,
+			&PostVote.Time, // Add this field
+		)
 		if err != nil {
 			return nil, err
 		}
 		PostVotes = append(PostVotes, &PostVote)
 	}
+
 	if err = rows.Err(); err != nil {
-		// fmt.Println("FILTER:  2 error")
 		return nil, err
 	}
+
 	return PostVotes, nil
 }
 

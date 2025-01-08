@@ -140,5 +140,6 @@ type PostVotes struct {
 	ReactionStr     string
 	IsSeen          bool
 	ReactorUsername string
+	Time            time.Time
 	PostTitle       string
 }

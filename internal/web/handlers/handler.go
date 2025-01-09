@@ -32,9 +32,9 @@ func (handler *Handler) InitRouter() *http.ServeMux {
 	mux.HandleFunc("/filter/", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.FilterHandler)))
 	// authorisation
 	mux.HandleFunc("/auth/google/in", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.OnlyUnauthMiddleware(handler.GoogleAuthHandler))))
-	mux.HandleFunc("/auth/google/callback", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.OnlyUnauthMiddleware(handler.GoogleCallback))))
+	mux.HandleFunc("/google/callback", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.OnlyUnauthMiddleware(handler.GoogleCallback))))
 	mux.HandleFunc("/auth/github/in", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.OnlyUnauthMiddleware(handler.GithubAuthHandler))))
-	mux.HandleFunc("/auth/github/callback", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.OnlyUnauthMiddleware(handler.GithubCallback))))
+	mux.HandleFunc("/github/callback", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.OnlyUnauthMiddleware(handler.GithubCallback))))
 	// moderation
 	mux.HandleFunc("/moderator", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.ModeratorRequestHandler))))
 	mux.HandleFunc("/admin_page", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.AdminMainPageHandler))))

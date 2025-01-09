@@ -207,6 +207,7 @@
         {{ if  .LoggedIn}}
         <h2>Welcome </h2>
         {{$userID:=.User.UserUserID}}
+        <button onclick="location.href='/logout'">Logout</button><br>
         <!-- notif button -->
         <div class="notification-btn">
             <button onclick="location.href='/notifications?quserID={{$userID}}'">Notifications</button>

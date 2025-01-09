@@ -1,26 +1,21 @@
-# Stage 1: Build the Go application
 FROM golang:alpine AS build
-
-# Set CGO_ENABLED to 1 and install dependencies
 ENV CGO_ENABLED=1
 RUN apk add --no-cache gcc musl-dev
-
-# Set working directory
 WORKDIR /app
 COPY . .
-
-# Build the Go application
 RUN go build -o forum ./cmd/main.go
 
-# Stage 2: Create a minimal runtime container
 FROM alpine:latest
-
-# Install the required runtime dependencies (SQLite)
-RUN apk add --no-cache sqlite-libs
-
-# Copy the built binary from the build stage
+RUN apk add --no-cache sqlite-libs && \
+    adduser -D appuser
 WORKDIR /app
-COPY --from=build /app .
-
-# Set the default command to run the binary
+RUN mkdir -p ./cmd/config && mkdir -p ./data && mkdir -p ./web/templates && \
+    chown -R appuser:appuser /app
+USER appuser
+COPY --from=build /app/forum ./forum
+COPY --from=build /app/cmd/config/Config.json ./cmd/config/
+COPY --from=build /app/internal/database/migration ./internal/database/migration
+COPY --from=build /app/internal/web/templates/*.html ./web/templates/
+COPY --from=build /app/tls ./tls
+EXPOSE 8080
 CMD ["./forum"]

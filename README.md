@@ -28,7 +28,7 @@ docker build -t forum .
 Run Docker
 
 ```CMD/Terminal
-docker run --name=forum -p 8080:8080 --rm -d forum
+docker run --name=forum -p 8080:8080 --rm forum
 ```
 
 Check the Container

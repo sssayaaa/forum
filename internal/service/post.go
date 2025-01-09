@@ -68,12 +68,17 @@ func (postObg *PostServiceImpl) isPostParamsValid(post *models.Post) error {
 	if len(post.Title) < 2 {
 		return errors.New("The title must be at least 2 characters")
 	}
+	if len(post.Title) > 50 {
+		return errors.New("Title is too long (maximum 50 characters)")
+	}
+
 	if len(post.Content) < 2 {
 		return errors.New("The content must be at least 2 characters")
 	}
 	if len(post.Categories) == 0 {
 		return errors.New("Didn't select the categories you want")
 	}
+
 	return nil
 }
 
@@ -101,6 +106,26 @@ func (postObj *PostServiceImpl) isCategoryValid(categories []string) error {
 	if len(categories) == 0 {
 		return errors.New("YOUR CATEGORY IS NULL")
 	}
+
+	// Get all valid categories using your existing method
+	validCategories, err := postObj.GetAllCategories()
+	if err != nil {
+		return fmt.Errorf("failed to fetch valid categories: %v", err)
+	}
+
+	// Create a map for efficient lookup
+	validCategoryMap := make(map[string]bool)
+	for _, cat := range validCategories {
+		validCategoryMap[cat.Category] = true
+	}
+
+	// Validate each provided category
+	for _, category := range categories {
+		if !validCategoryMap[category] {
+			return fmt.Errorf("invalid category: %s", category)
+		}
+	}
+
 	return nil
 }
 

@@ -60,6 +60,16 @@
             background-color: #f5f5f5;
             color: #777;
         }
+        .post-image {
+        margin: 15px 0;
+        text-align: center;
+        }
+
+        .post-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
 
     </style>
     <head>
@@ -83,6 +93,11 @@
 
                         <div class = "entry">
                             <h2>{{.ThePost.Content}}</h2>
+                            {{if .ThePost.ImagePath}}
+                            <div class="post-image">
+                                <img src="{{.ThePost.ImagePath}}" alt="Post image" style="max-width: 100%; height: auto;">
+                            </div>
+                            {{end}}
                         </div>
                     </div>    
                         {{$postID:=.ThePost.PostID}}
@@ -198,7 +213,20 @@
             
                         <div class="entry">
                             <h2>{{.ThePost.Content}}</h2>
+                            <!-- {{if ne .ThePost.ImagePath ""}}
+                                <div class="post-image">
+                                    <p>Attempting to display image from: {{.ThePost.ImagePath}}</p>
+                                    <img src="/{{.ThePost.ImagePath}}" alt="Post image" style="max-width: 100%; height: auto;">
+                                </div>
+                            {{else}} -->
+                                <!-- <p>No image path available</p>
+                            {{end}} -->
+                            {{if ne .ThePost.ImagePath ""}}
+                                <p>Debug - Trying to load image from: {{.ThePost.ImagePath}}</p>
+                                <img src="{{.ThePost.ImagePath}}" alt="Image Description" width="300">
+                                {{end}}
                         </div>
+                        
                     </div>
                         {{range .AllComments}}
                         {{if .IsApproved}}

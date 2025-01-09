@@ -35,7 +35,7 @@ func (h *Handler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		postCategory := r.Form["preference"]
-		
+
 
 		post := &models.Post{
 			UserID:     session.UserID,
@@ -715,14 +715,12 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
-		// Get likes/dislikes
 		postVotes, err := h.service.PostServiceInterface.GetAllMyPostsLikedByOtherUsers(intuserID)
 		if err != nil {
 			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		// Process likes/dislikes
 		for _, postVote := range postVotes {
 			if postVote.Reaction == 1 {
 				postVote.ReactionStr = "liked"

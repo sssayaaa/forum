@@ -138,10 +138,11 @@ func (postObj *PostRepoImpl) GetPostByID(postID int) (*models.Post, error) {
 	post := &models.Post{}
 
 	if err := postObj.db.QueryRow(
-		`SELECT id, user_id, title, content, created_time, likes_counter, dislikes_counter FROM posts WHERE id = ?`,
-		postID).Scan(&post.PostID, &post.UserID, &post.Title, &post.Content, &post.CreatedTime, &post.LikesCounter, &post.DislikeCounter); err != nil {
+		`SELECT id, user_id, title, content, created_time, likes_counter, dislikes_counter, image_path FROM posts WHERE id = ?`,
+		postID).Scan(&post.PostID, &post.UserID, &post.Title, &post.Content, &post.CreatedTime, &post.LikesCounter, &post.DislikeCounter, &post.ImagePath); err != nil {
 		return nil, err
 	}
+	fmt.Println("Retrieved post.ImagePath:", post.ImagePath)
 	return post, nil
 }
 
@@ -345,10 +346,10 @@ func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*mode
 	// Explicitly list columns instead of using SELECT *
 	// Add created_at to the SELECT statement
 	query := `
-        SELECT post_votes_id, post_id, user_id, reaction, created_at 
-        FROM post_votes 
-        WHERE post_id IN (SELECT id FROM posts WHERE user_id = ?)
-        ORDER BY created_at DESC` // Add ORDER BY to sort by time
+	    SELECT id, post_id, user_id, reaction, created_at
+	    FROM post_votes
+	    WHERE post_id IN (SELECT id FROM posts WHERE user_id = ?)
+	    ORDER BY created_at DESC` // Add ORDER BY to sort by time
 
 	rows, err := postObj.db.Query(query, userID)
 	if err != nil {
@@ -358,13 +359,16 @@ func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*mode
 
 	for rows.Next() {
 		var PostVote models.PostVotes
+
+		var nullTime sql.NullTime
 		// Add &PostVote.Time to the Scan parameters
 		err = rows.Scan(
 			&PostVote.PostVotesID,
 			&PostVote.PostID,
 			&PostVote.UserID,
 			&PostVote.Reaction,
-			&PostVote.Time, // Add this field
+			// &PostVote.Time, // Add this field
+			&nullTime,
 		)
 		if err != nil {
 			return nil, err
@@ -420,7 +424,7 @@ func (postObj *PostRepoImpl) MarkNotificationAsSeen(notificationID int) error {
 	query := `
         UPDATE post_votes 
         SET is_seen = 1 
-        WHERE post_votes_id = ?
+        WHERE id = ?
     `
 	_, err := postObj.db.Exec(query, notificationID)
 	return err

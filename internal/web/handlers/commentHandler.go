@@ -31,6 +31,8 @@ func (h *Handler) DisplayCommentsHandler(w http.ResponseWriter, r *http.Request)
 			return
 		}
 
+		fmt.Println("Debug - Image Path in handler:", post.ImagePath)
+
 		// get username
 		user, err := h.service.UserServiceInterface.GetUserByUserID(post.UserID)
 		// fmt.Println("USERNAME LOGGED IN: ", user.Username)

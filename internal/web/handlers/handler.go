@@ -61,6 +61,6 @@ func (handler *Handler) InitRouter() *http.ServeMux {
 	// dfhsdh
 	mux.HandleFunc("/check-notifications", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.CheckNotificationsHandler))))
 
-	mux.HandleFunc("/mark-notification-seen", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.MarkNotificationSeenHandler))))
+	mux.HandleFunc("/api/mark-notification-seen", NewRateLimiter(300, time.Minute).LimitMiddleware(handler.CheckCookieMiddleware(handler.NeedAuthMiddleware(handler.MarkNotificationSeenHandler))))
 	return mux
 }

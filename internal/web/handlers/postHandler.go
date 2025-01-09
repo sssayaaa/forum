@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"forum/internal/models"
 	helpers "forum/internal/web/handlers/helpers"
+	"io"
+	"log"
 	"net/http"
 	"sort"
 	"strconv"
@@ -35,7 +38,6 @@ func (h *Handler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		postCategory := r.Form["preference"]
-
 
 		post := &models.Post{
 			UserID:     session.UserID,
@@ -221,7 +223,7 @@ func (h *Handler) FilterHandler(w http.ResponseWriter, r *http.Request) {
 
 		categories, err := h.service.PostServiceInterface.GetAllCategories()
 		if err != nil {
-			helpers.ErrorHandler(w, http.StatusBadRequest, errors.New("PEDNING USERS were not found"))
+			helpers.ErrorHandler(w, http.StatusBadRequest, errors.New("PENDING USERS were not found"))
 		}
 
 		var strCategories []string
@@ -786,17 +788,28 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *Handler) MarkNotificationSeenHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Received request to mark notification as seen")
+
 	var req struct {
 		NotificationID int `json:"notification_id"`
 	}
 
+	// Log the raw request body
+	body, _ := io.ReadAll(r.Body)
+	r.Body = io.NopCloser(bytes.NewBuffer(body)) // Replace the body for later use
+	log.Printf("Request body: %s", string(body))
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("Error decoding request: %v", err)
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
+	log.Printf("Notification ID: %d", req.NotificationID)
+
 	err := h.service.PostServiceInterface.MarkNotificationAsSeen(req.NotificationID)
 	if err != nil {
+		log.Printf("Error marking notification as seen: %v", err)
 		http.Error(w, "Error marking notification as seen", http.StatusInternalServerError)
 		return
 	}

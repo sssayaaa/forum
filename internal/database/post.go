@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"forum/internal/models"
+	"log"
+	"strings"
+	"time"
 )
 
 type PostRepoImpl struct {
@@ -198,21 +201,36 @@ func (postObj *PostRepoImpl) GetPostsByUserId(userID int) ([]*models.Post, error
 func (postObj *PostRepoImpl) GetPostsByLikes(userID int) ([]*models.Post, error) {
 	posts := []*models.Post{}
 	rows, err := postObj.db.Query(`
-	SELECT * FROM posts WHERE id IN (SELECT post_id FROM post_votes WHERE user_id = ?) ORDER BY created_time DESC
-	`, userID)
+    SELECT p.id, p.user_id, p.title, p.content, p.created_time, p.likes_counter, 
+           p.dislikes_counter, p.image_path, p.is_approved, p.reports, p.report_category
+    FROM posts p 
+    WHERE p.id IN (SELECT post_id FROM post_votes WHERE user_id = ?) 
+    ORDER BY p.created_time DESC
+    `, userID)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
+
 	for rows.Next() {
 		var post models.Post
-		err = rows.Scan(&post.PostID, &post.UserID, &post.Title, &post.Content, &post.CreatedTime, &post.LikesCounter, &post.DislikeCounter)
+		err = rows.Scan(
+			&post.PostID,
+			&post.UserID,
+			&post.Title,
+			&post.Content,
+			&post.CreatedTime,
+			&post.LikesCounter,
+			&post.DislikeCounter,
+			&post.ImagePath,
+			&post.IsApproved,
+			&post.ReportStatus,     // maps to 'reports' column
+			&post.ReportCategories, // maps to 'report_category' column
+		)
 		if err != nil {
 			return nil, err
 		}
 		posts = append(posts, &post)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
 	}
 	return posts, nil
 }
@@ -342,65 +360,119 @@ func (postObj *PostRepoImpl) GetMyReactedPosts(userID int) (map[int]int, error) 
 
 func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*models.PostVotes, error) {
 	var PostVotes []*models.PostVotes
-
-	// Explicitly list columns instead of using SELECT *
-	// Add created_at to the SELECT statement
-	query := `
-	    SELECT id, post_id, user_id, reaction, created_at
-	    FROM post_votes
-	    WHERE post_id IN (SELECT id FROM posts WHERE user_id = ?)
-	    ORDER BY created_at DESC` // Add ORDER BY to sort by time
-
-	rows, err := postObj.db.Query(query, userID)
+	rows, err := postObj.db.Query(`
+        SELECT pv.id as post_votes_id, 
+               pv.post_id, 
+               pv.user_id, 
+               pv.reaction,
+               COALESCE(pv.is_seen, 0) as is_seen, 
+               COALESCE(pv.created_at, CURRENT_TIMESTAMP) as time
+        FROM posts p
+        JOIN post_votes pv ON p.id = pv.post_id
+        WHERE p.user_id = ? AND pv.user_id != ?
+        ORDER BY pv.created_at DESC`, userID, userID)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close() // Don't forget to close the rows
+	defer rows.Close()
 
 	for rows.Next() {
 		var PostVote models.PostVotes
+		var timeStr sql.NullString
 
-		var nullTime sql.NullTime
-		// Add &PostVote.Time to the Scan parameters
 		err = rows.Scan(
 			&PostVote.PostVotesID,
 			&PostVote.PostID,
 			&PostVote.UserID,
 			&PostVote.Reaction,
-			// &PostVote.Time, // Add this field
-			&nullTime,
+			&PostVote.IsSeen,
+			&timeStr,
 		)
 		if err != nil {
 			return nil, err
 		}
+
+		if timeStr.Valid {
+			parsedTime, err := time.Parse(time.RFC3339, timeStr.String)
+			if err != nil {
+				// Try alternative format if RFC3339 fails
+				parsedTime, err = time.Parse("2006-01-02 15:04:05.9999999-07:00", timeStr.String)
+				if err != nil {
+					// If both formats fail, try without timezone
+					parsedTime, err = time.Parse("2006-01-02 15:04:05", strings.Split(timeStr.String, ".")[0])
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
+			PostVote.Time = parsedTime
+		} else {
+			PostVote.Time = time.Now()
+		}
+
 		PostVotes = append(PostVotes, &PostVote)
 	}
-
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
-
 	return PostVotes, nil
 }
 
 func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*models.PostVotes, error) {
 	var PostVotes []*models.PostVotes
-	rows, err := postObj.db.Query("SELECT post_id,user_id FROM comments WHERE post_id IN (SELECT id FROM posts WHERE user_id = ?)", userID)
+	rows, err := postObj.db.Query(`
+        SELECT c.id as post_votes_id, 
+               c.post_id, 
+               c.user_id, 
+               0 as reaction,
+               COALESCE(c.is_seen, 0) as is_seen, 
+               COALESCE(c.created_time, CURRENT_TIMESTAMP) as time
+        FROM posts p
+        JOIN comments c ON p.id = c.post_id
+        WHERE p.user_id = ? AND c.user_id != ?
+        ORDER BY c.created_time DESC`, userID, userID)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var PostVote models.PostVotes
+		var timeStr sql.NullString
 
-		err = rows.Scan(&PostVote.PostID, &PostVote.UserID)
+		err = rows.Scan(
+			&PostVote.PostVotesID,
+			&PostVote.PostID,
+			&PostVote.UserID,
+			&PostVote.Reaction,
+			&PostVote.IsSeen,
+			&timeStr,
+		)
 		if err != nil {
 			return nil, err
 		}
+
+		if timeStr.Valid {
+			parsedTime, err := time.Parse(time.RFC3339, timeStr.String)
+			if err != nil {
+				// Try alternative format if RFC3339 fails
+				parsedTime, err = time.Parse("2006-01-02 15:04:05.9999999-07:00", timeStr.String)
+				if err != nil {
+					// If both formats fail, try without timezone
+					parsedTime, err = time.Parse("2006-01-02 15:04:05", strings.Split(timeStr.String, ".")[0])
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
+			PostVote.Time = parsedTime
+		} else {
+			PostVote.Time = time.Now()
+		}
+
 		PostVotes = append(PostVotes, &PostVote)
 	}
 	if err = rows.Err(); err != nil {
-		// fmt.Println("FILTER:  2 error")
 		return nil, err
 	}
 	return PostVotes, nil
@@ -409,11 +481,15 @@ func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*
 func (postObj *PostRepoImpl) CountUnseenNotifications(userID int) (int, error) {
 	var count int
 	query := `
-        SELECT COUNT(*) 
-        FROM post_votes 
-        WHERE user_id = ? AND is_seen = 0
+        SELECT COUNT(*) FROM (
+            SELECT id FROM post_votes 
+            WHERE user_id = ? AND is_seen = 0
+            UNION ALL
+            SELECT id FROM comments 
+            WHERE user_id = ? AND is_seen = 0
+        )
     `
-	err := postObj.db.QueryRow(query, userID).Scan(&count)
+	err := postObj.db.QueryRow(query, userID, userID).Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -421,11 +497,28 @@ func (postObj *PostRepoImpl) CountUnseenNotifications(userID int) (int, error) {
 }
 
 func (postObj *PostRepoImpl) MarkNotificationAsSeen(notificationID int) error {
-	query := `
-        UPDATE post_votes 
-        SET is_seen = 1 
-        WHERE id = ?
-    `
-	_, err := postObj.db.Exec(query, notificationID)
+	maxRetries := 3
+	var err error
+
+	for i := 0; i < maxRetries; i++ {
+		query := `
+            UPDATE post_votes 
+            SET is_seen = 1 
+            WHERE id = ?
+        `
+		_, err = postObj.db.Exec(query, notificationID)
+		if err == nil {
+			return nil
+		}
+
+		if strings.Contains(err.Error(), "database is locked") {
+			log.Printf("Database locked, attempt %d of %d, waiting before retry...", i+1, maxRetries)
+			time.Sleep(100 * time.Millisecond)
+			continue
+		}
+
+		return err // If it's not a locking error, return immediately
+	}
+
 	return err
 }

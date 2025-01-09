@@ -111,6 +111,7 @@ type Comment struct {
 	IsApproved        int
 	ReportStatus      int
 	Reaction          string
+	IsSeen            bool
 }
 
 type Database struct {

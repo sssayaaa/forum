@@ -15,8 +15,15 @@ func CreateNewCommentDB(db *sql.DB) *CommentRepoImpl {
 
 func (cmnt *CommentRepoImpl) CreateCommentRepo(comment *models.Comment) (int64, error) {
 	result, err := cmnt.db.Exec(`
-	INSERT INTO comments (user_id, post_id, content, created_time, likes_counter, dislikes_counter, is_approved, reports) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
-		comment.UserID, comment.PostID, comment.Content, comment.CreatedTime, comment.LikesCounter, comment.DislikeCounter, comment.IsApproved, comment.ReportStatus)
+    INSERT INTO comments (
+        user_id, post_id, content, created_time, 
+        likes_counter, dislikes_counter, is_approved, 
+        reports, is_seen
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);`,
+		comment.UserID, comment.PostID, comment.Content,
+		comment.CreatedTime, comment.LikesCounter,
+		comment.DislikeCounter, comment.IsApproved,
+		comment.ReportStatus, false) // Set is_seen to false by default
 	if err != nil {
 		return -1, err
 	}
@@ -26,14 +33,31 @@ func (cmnt *CommentRepoImpl) CreateCommentRepo(comment *models.Comment) (int64, 
 func (cmnt *CommentRepoImpl) GetAlCommentsForPost(postID int) ([]*models.Comment, error) {
 	comments := []*models.Comment{}
 
-	rows, err := cmnt.db.Query("SELECT * FROM comments ORDER BY created_time DESC")
+	rows, err := cmnt.db.Query(`
+        SELECT id, post_id, user_id, content, created_time, 
+               likes_counter, dislikes_counter, is_approved, 
+               reports, is_seen 
+        FROM comments 
+        ORDER BY created_time DESC`)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var comment models.Comment
-		err = rows.Scan(&comment.CommentID, &comment.PostID, &comment.UserID, &comment.Content, &comment.CreatedTime, &comment.LikesCounter, &comment.DislikeCounter, &comment.IsApproved, &comment.ReportStatus)
+		err = rows.Scan(
+			&comment.CommentID,
+			&comment.PostID,
+			&comment.UserID,
+			&comment.Content,
+			&comment.CreatedTime,
+			&comment.LikesCounter,
+			&comment.DislikeCounter,
+			&comment.IsApproved,
+			&comment.ReportStatus,
+			&comment.IsSeen, // Add this field to your Comment struct
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -41,7 +65,6 @@ func (cmnt *CommentRepoImpl) GetAlCommentsForPost(postID int) ([]*models.Comment
 		if postID == comment.PostID {
 			comments = append(comments, &comment)
 		}
-
 	}
 
 	if err = rows.Err(); err != nil {
@@ -177,17 +200,24 @@ func (cmnt *CommentRepoImpl) GetMyReactedComments(userID int) (map[int]int, erro
 }
 
 func (cmnt *CommentRepoImpl) GetCommentByID(commentID int) (*models.Comment, error) {
-	comment := &models.Comment{}
+    comment := &models.Comment{}
 
-	if err := cmnt.db.QueryRow(
-		`SELECT * FROM comments WHERE id = ?`,
-		commentID).Scan(&comment.CommentID, &comment.PostID, &comment.UserID, &comment.Content, &comment.CreatedTime, &comment.LikesCounter, &comment.DislikeCounter, &comment.IsApproved, &comment.ReportStatus); err != nil {
-		return nil, err
-	}
-	return comment, nil
+    if err := cmnt.db.QueryRow(`
+        SELECT id, post_id, user_id, content, created_time, 
+               likes_counter, dislikes_counter, is_approved, 
+               reports, is_seen 
+        FROM comments WHERE id = ?`,
+        commentID).Scan(
+        &comment.CommentID, &comment.PostID, &comment.UserID,
+        &comment.Content, &comment.CreatedTime, &comment.LikesCounter,
+        &comment.DislikeCounter, &comment.IsApproved, &comment.ReportStatus,
+        &comment.IsSeen); err != nil {
+        return nil, err
+    }
+    return comment, nil
 }
 
-func(cmnt *CommentRepoImpl) GetCommentByUserID(userID int) ([]*models.Comment, error) {
+func (cmnt *CommentRepoImpl) GetCommentByUserID(userID int) ([]*models.Comment, error) {
 	comments := []*models.Comment{}
 	rows, err := cmnt.db.Query(`
 	SELECT * FROM comments WHERE user_id = ? ORDER BY created_time DESC

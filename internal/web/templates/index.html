@@ -187,26 +187,12 @@
 </head>
 <body>
     <div align="center">
-        
-        <div class="dropdown">
-            <button class="dropbtn">Filter</button>
-            <div class="dropdown-content">
-              <a href="/">All</a>
-              {{range .AllCategories}}
-              <a href="/filter/{{.}}">{{.}}</a>
-              {{end}}
-              {{if .LoggedIn}}
-              <a href="/filter/CreatedPosts">Created Posts</a>
-              <a href="/filter/LikedPosts">Liked Posts</a>
-              {{end}}
-            </div>
-        </div> 
         <br>
-        <br>
-       
+     
         {{ if  .LoggedIn}}
-        <h2>Welcome </h2>
+        <h2>Welcome back,</h2>
         {{$userID:=.User.UserUserID}}
+        <h2>{{.User.UserUserID}}!</h2>
         <button onclick="location.href='/logout'">Logout</button><br>
         <!-- notif button -->
         <div class="notification-btn">
@@ -281,7 +267,18 @@
             <input type="submit" value="Submit">
         </form>
 
-        
+        <div class="dropdown">
+            <button class="dropbtn">Filter</button>
+            <div class="dropdown-content">
+              <a href="/">All</a>
+              {{range .AllCategories}}
+              <a href="/filter/{{.}}">{{.}}</a>
+              {{end}}
+              <a href="/filter/CreatedPosts">My Posts</a>
+              <a href="/filter/LikedPosts">My Liked Posts</a>
+            </div>
+        </div> 
+
         <br>
         <div class="frame">
             <div class="content">
@@ -446,6 +443,16 @@
             <button onclick="location.href='/login'">Login</button>
             <button onclick="location.href='/registration'">Register</button>
             <br>
+            <br>
+            <div class="dropdown">
+                <button class="dropbtn">Filter</button>
+                <div class="dropdown-content">
+                  <a href="/">All</a>
+                  {{range .AllCategories}}
+                  <a href="/filter/{{.}}">{{.}}</a>
+                  {{end}}
+                </div>
+            </div> 
             <br>
             <div class = "content">
                 {{range .AllPosts}}

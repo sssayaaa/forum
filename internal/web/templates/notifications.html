@@ -38,7 +38,6 @@ nav li a:hover:not(.active) {
 .content {
   flex: 1;
   padding: 16px;
-  
 }
 
 table {
@@ -60,8 +59,7 @@ th {
   color: white;
 }
 
-/* Style for buttons */
-.approve-btn, .reject-btn {
+.seen-btn {
   padding: 6px 10px;
   background-color: #4CAF50;
   color: white;
@@ -70,76 +68,125 @@ th {
   cursor: pointer;
 }
 
-.reject-btn {
-  background-color: #f44336;
-  margin-left: 5px;
+.seen-text {
+  color: #666;
+  margin: 0;
 }
 
-/* Style for hidden input fields */
-.hidden-input {
-  display: none;
+/* Add animation for smooth transition */
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
 }
 </style>
 </head>
 <body>
-
-
-<!-- Add a container for your content with the "content" class -->
-<body>
-  <div class="content">
+<div class="content">
   <table>
-  <thead>
-  <tr>
-      <th>Notifications</th>
-      <th>Time</th>
-      <th>Action</th>
-  </tr>
-  </thead>
-  <tbody>
-  {{range .Notifications}}
-  <tr>
-      <td>
+    <thead>
+      <tr>
+        <th>Notifications</th>
+        <th>Time</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Notifications}}
+      <tr data-notification-id="{{.PostVotesID}}">
+        <td>
           Your post {{.PostTitle}} was 
           {{if .ReactionStr}}
-              {{.ReactionStr}}
+            {{.ReactionStr}}
           {{else}}
-              commented
+            commented
           {{end}}
           by user {{.ReactorUsername}}
-      </td>
-      <td class="timestamp">{{.Time.Format "2006/01/02 15:04:05"}}</td>
-      <td>
+        </td>
+        <td class="timestamp">{{.Time.Format "2006/01/02 15:04:05"}}</td>
+        <td>
           {{if not .IsSeen}}
           <button class="seen-btn" onclick="markAsSeen('{{.PostVotesID}}')">Mark as seen</button>
+          {{else}}
+          <h5 class="seen-text">Seen</h5>
           {{end}}
-      </td>
-  </tr>
-  {{end}}
-  </tbody>
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
   </table>
-  
+
   <script>
     function markAsSeen(notificationId) {
-    fetch('/api/mark-notification-seen', {
+      console.log('Marking notification as seen:', notificationId);
+      
+      // Find the button that was clicked
+      const button = document.querySelector(`tr[data-notification-id="${notificationId}"] .seen-btn`);
+      
+      // Disable the button immediately to prevent double-clicks
+      if (button) {
+        button.disabled = true;
+      }
+
+      fetch('/api/mark-notification-seen', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ notification_id: parseInt(notificationId) })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Refresh the page to update the notification list
-            location.reload();
+        body: JSON.stringify({ 
+          notification_id: parseInt(notificationId, 10)
+        }),
+        credentials: 'include'  // Add this to ensure cookies are sent
+      })
+      .then(async response => {
+        if (!response.ok) {
+          const text = await response.text();
+          console.error('Server response:', text);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-    });
-}
-    </script>
+        try {
+          return response.json();
+        } catch (e) {
+          console.error('JSON parse error:', e);
+          throw e;
+        }
+      })
+      .then(data => {
+        if (data.success) {
+          // Find the notification row
+          const row = document.querySelector(`tr[data-notification-id="${notificationId}"]`);
+          if (row) {
+            // Create the "Seen" text
+            const seenText = document.createElement('h5');
+            seenText.className = 'seen-text';
+            seenText.textContent = 'Seen';
+            
+            // Replace the button with the "Seen" text
+            const actionCell = row.querySelector('td:last-child');
+            if (actionCell) {
+              actionCell.innerHTML = '';
+              actionCell.appendChild(seenText);
+            }
+          }
+        } else {
+          // If there was an error, re-enable the button
+          if (button) {
+            button.disabled = false;
+          }
+          console.error('Failed to mark notification as seen');
+        }
+      })
+      .catch(error => {
+        // If there was an error, re-enable the button
+        if (button) {
+          button.disabled = false;
+        }
+        console.error('Error:', error);
+        alert('Failed to mark notification as seen. Please try again.');
+      });
+    }
+  </script>
 
-  <button onclick="location.href='/'">Back Main</button><br>
-
+  <button onclick="location.href='/'">Back Main</button>
 </div>
-
 </body>
 </html>

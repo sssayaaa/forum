@@ -27,13 +27,22 @@ func (h *Handler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		postTitle := r.FormValue("posttitle")
+		const maxTitleLength = 50
+		if len(postTitle) > maxTitleLength {
+			// postTitle = postTitle[:maxTitleLength]
+			http.Error(w, "Title is too long (maximum 50 characters)", http.StatusBadRequest)
+		}
+
+		postCategory := r.Form["preference"]
+		
+
 		post := &models.Post{
 			UserID:     session.UserID,
-			Title:      r.FormValue("posttitle"),
+			Title:      postTitle,
 			Content:    r.FormValue("postcontent"),
-			Categories: r.Form["preference"],
+			Categories: postCategory,
 		}
-		// fmt.Println(post.Categories)
 
 		//=============================================================
 		//block of code responsible for the image upload

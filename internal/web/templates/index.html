@@ -3,121 +3,186 @@
 <head>
     <title>Login or Register</title>
     <style>
-        .dropbtn {
-          background-color: #04AA6D;
-          color: white;
-          padding: 16px;
-          font-size: 16px;
-          border: none;
-        }
-        
-        .dropdown {
-          position: relative;
-          display: inline-block;
-        }
-        
-        .dropdown-content {
-          display: none;
-          position: absolute;
-          background-color: #f1f1f1;
-          min-width: 160px;
-          box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-          z-index: 1;
-        }
-        
-        .dropdown-content a {
-          color: black;
-          padding: 12px 16px;
-          text-decoration: none;
-          display: block;
-        }
-        
-        .dropdown-content a:hover {background-color: #ddd;}
-        
-        .dropdown:hover .dropdown-content {display: block;}
-        
-        .dropdown:hover .dropbtn {background-color: #3e8e41;}
-        .frame {
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 20px;
-        }
+/* Dropdown styles */
+.dropbtn {
+    background-color: #04AA6D;
+    color: white;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+}
 
-        /* Border for individual post elements inside the frame */
-        .post {
-            border: 1px solid #171515;
-            border-radius: 1px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
 
-        /* Style for headings inside the post */
-        .post .title {
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-        }
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
 
-        /* Style for meta information */
-        .post .meta {
-            font-size: 10px;
-            color: #777;
-        }
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
 
-        /* Style for entry content */
-        .post .entry {
-            margin-bottom: 10px;
-        }
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
 
-        /* Style for categories */
-        .post p span {
-            margin-right: 5px;
-            padding: 5px;
-            background-color: #f5f5f5;
-            color: #777;
-        }
+.dropdown:hover .dropdown-content {
+    display: block;
+}
 
-        /* Style for react buttons */
-        .post form input[type="submit"] {
-            margin-top: 10px;
-        }
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
 
+/* Frame and post container styles */
+.frame {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    margin: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
 
-   
-        .notification-btn {
-        position: relative;
-        display: inline-block;
-    }
+.post {
+    border: 1px solid #171515;
+    border-radius: 1px;
+    padding: 15px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
 
-    .notification-btn button {
-        padding: 8px 16px;
-        background-color: #04AA6D;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-    }
+/* Post title styles */
+.post .title {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    font-size: 20px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
 
-    .notification-badge {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        padding: 4px 8px;
-        border-radius: 50%;
-        background: red;
-        color: white;
-        font-size: 12px;
-        display: none; /* Hidden by default */
-        min-width: 16px;
-        height: 16px;
-        text-align: center;
-        line-height: 16px;
-    }
+/* Meta information styles */
+.post .meta {
+    font-size: 10px;
+    color: #777;
+    margin-bottom: 15px;
+}
 
-    .notification-badge.show {
-        display: block;
-    }
+/* Entry content styles */
+.post .entry {
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.post .entry h2 {
+    font-size: 16px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    max-width: 100%;
+    font-weight: normal;
+    max-height: 100px;
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.3s ease-out;
+}
+
+.post .entry h2.expanded {
+    max-height: none;
+}
+
+.show-more-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #666;
+    font-size: 14px;
+}
+
+.show-more-btn:hover {
+    background-color: #e5e5e5;
+}
+
+/* Image styles */
+.post img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 15px 0;
+}
+
+/* Category tag styles */
+.post p span {
+    margin-right: 5px;
+    padding: 5px;
+    background-color: #f5f5f5;
+    color: #777;
+    display: inline-block;
+}
+
+/* React button styles */
+.post form input[type="submit"] {
+    margin-top: 10px;
+}
+
+/* Notification styles */
+.notification-btn {
+    position: relative;
+    display: inline-block;
+}
+
+.notification-btn button {
+    padding: 8px 16px;
+    background-color: #04AA6D;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    padding: 4px 8px;
+    border-radius: 50%;
+    background: red;
+    color: white;
+    font-size: 12px;
+    display: none;
+    min-width: 16px;
+    height: 16px;
+    text-align: center;
+    line-height: 16px;
+}
+
+.notification-badge.show {
+    display: block;
+}
+
+/* Form size utility */
+.formsize {
+    max-width: 100%;
+}
     </style>
 </head>
 <body>
@@ -235,6 +300,10 @@
                             <div style="clear: both;">&nbsp;</div>
                             <div class="entry">
                                 <h2>{{.Content}}</h2>
+
+                                {{if gt (len .Content) 200}}
+                                <button class="show-more-btn" onclick="toggleContent(this)">Show More</button>
+                                {{end}}
                             </div>
                 
                             <p>
@@ -370,6 +439,7 @@
         
 
         {{else}}
+        <div class="frame">
             <h2>Welcome Guest!</h2>
             <p>Please select an option:</p>
             <button onclick="location.href='/login'">Login</button>
@@ -388,6 +458,9 @@
                     <div style="clear: both;">&nbsp;</div>
                     <div class = "entry">
                         <h2>{{.Content}}</h2>
+                        {{if gt (len .Content) 200}}
+                                <button class="show-more-btn" onclick="toggleContent(this)">Show More</button>
+                                {{end}}
                     </div>
 
                     <p>
@@ -401,9 +474,29 @@
                 {{end}}
                 {{end}}
             </div>
+        </div>
+            
         {{end}}
 
     </div>
+
+    <script>
+         window.onload = function() {
+        // Initialize all long posts to be truncated
+        const posts = document.querySelectorAll('.entry h2');
+        posts.forEach(post => {
+            if (post.offsetHeight > 100) {
+                post.classList.remove('expanded');
+            }
+        });
+    }
+
+    function toggleContent(button) {
+        const contentElement = button.parentElement.querySelector('h2');
+        const isExpanded = contentElement.classList.toggle('expanded');
+        button.textContent = isExpanded ? 'Show Less' : 'Show More';
+    }
+    </script>
 
 </body>
 </html>

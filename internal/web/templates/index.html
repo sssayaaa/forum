@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login or Register</title>
+    <title>Home | Forum</title>
     <style>
 /* Dropdown styles */
 .dropbtn {
@@ -144,6 +144,11 @@
     margin-top: 10px;
 }
 
+.fine-print {
+    color: rgb(255, 151, 151);
+    size: 5px;
+}
+
 /* Notification styles */
 .notification-btn {
     position: relative;
@@ -183,30 +188,84 @@
 .formsize {
     max-width: 100%;
 }
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #333;
+  width: 200px;
+  float: left;
+}
+
+nav li {
+  float: left;
+}
+
+nav li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  
+}
+
+/* Change the link color to #111 (black) on hover */
+nav li a:hover {
+  background-color: #111;
+}
     </style>
 </head>
 <body>
     <div align="center">
-        <br>
+        <div>
+            <header>
+                <a href="/">FORUM</a>
+            </header>
+        </div>
      
         {{ if  .LoggedIn}}
-        <h2>Welcome back,</h2>
-        {{$userID:=.User.UserUserID}}
-        {{if ne .User.FirstName ""}}
-            <h2>{{.User.FirstName   }}!</h2>
-        {{else if ne .User.Username ""}}
-            <h2>{{.User.Username }}!</h2>
-        {{else}}
-            <h2>{{.User.Email }}!</h2>
-        {{end}}
-        <button onclick="location.href='/logout'">Logout</button><br>
+        <div class="greeting">
+            <h2>Welcome back,</h2>
+            {{$userID:=.User.UserUserID}}
+                {{if ne .User.FirstName ""}}
+                    <h2>{{.User.FirstName   }}!</h2>
+                {{else if ne .User.Username ""}}
+                    <h2>{{.User.Username }}!</h2>
+                {{else}}
+                    <h2>{{.User.Email }}!</h2>
+                {{end}}
+        </div>
+        
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/notifications?quserID={{ $userID }}">My Notifications</a></li>
+                <li><a href="/created_my_posts?quserID={{ $userID }}">My Activity History</a></li>
+                {{ if eq .User.Role "admin" }}
+                    <li><a href="/admin_page">Admin Mode</a></li>
+                {{ end }}
+                {{ if eq .User.Role "user" }}
+                    <li>
+                        <form action="/moderator" method="post">
+                            <button class="moderator_btn" type="submit">Apply to be a Moderator</button>
+                        </form>
+                    </li>
+                {{ end }}
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+        
+        <!-- <button onclick="location.href='/logout'">Logout</button><br> -->
         <!-- notif button -->
-        <div class="notification-btn">
+        <!-- <div class="notification-btn">
             <button onclick="location.href='/notifications?quserID={{$userID}}'">Notifications</button>
             <span class="notification-badge" id="notificationBadge"></span>
-        </div>
+        </div> -->
     
-        <script>
+        <!-- <script>
         function checkNewNotifications() {
             fetch('/api/check-notifications?userID={{$userID}}')
                 .then(response => {
@@ -235,42 +294,42 @@
         
         // Then check every 2 minutes instead of every 30 seconds
         setInterval(checkNewNotifications, 120000); // 120000 ms = 2 minutes
-        </script>
+        </script> -->
 
         <!-- shfkshfkvhjdddddddddddddddddddh -->
 
 
 
 
-        <br>
+        <!-- <br>
         <button onclick="location.href='/created_my_posts?quserID={{$userID}}'">Show activity history</button><br>
-        <br>
-            {{if eq .User.Role "admin"}}
-            <button onclick="location.href='/admin_page'">Back to Admin Mode</button><br>
+        <br> -->
+            <!-- {{if eq .User.Role "admin"}}
+            <button onclick="location.href='/admin_page'">Admin Mode</button><br>
             {{end}}
 
             {{if eq .User.Role "user"}}
             <form action="/moderator" method="post">
-                <!-- Include a hidden input field to submit user_id -->
                 <button class="moderator_btn" type="submit">Apply to be a Moderator</button>
             </form>
-            {{end}}
+            {{end}} -->
 
 
         <form action="/submit-post" enctype="multipart/form-data" method="post">
+            <h2>Create a new post</h2>
+            <p>Choose at least one category:</p>
             {{range .AllCategories}}
             <label><input type="checkbox" name="preference" value="{{.}}"> {{.}} </label>
-            <!-- <label><input type="checkbox" name="preference" value="game"> Game </label>
-            <label><input type="checkbox" name="preference" value="book"> Book </label>
-            <label><input type="checkbox" name="preference" value="others"> Others </label><br> -->
             {{end}}
-            <br>
+            <br><br>
             <label for="posttitle">Write your Post Title:</label><br>
             <textarea id name="posttitle" rows="2" cols="50"></textarea><br>
+            <p class="fine-print">*Minimum 2, maximum 50 characters</p>
             <label for="postcontent">Write your Post Content:</label><br>
             <textarea id="postcontent" name="postcontent" rows="4" cols="50"></textarea><br>
             <input type="file" name="files" multiple>
             <input type="submit" value="Submit">
+            <p class="fine-print">*You can attach only one file</p>
         </form>
 
         <div class="dropdown">
@@ -281,7 +340,7 @@
               <a href="/filter/{{.}}">{{.}}</a>
               {{end}}
               <a href="/filter/CreatedPosts">My Posts</a>
-              <a href="/filter/LikedPosts">My Liked Posts</a>
+              <a href="/filter/LikedPosts">My Liked/Disliked Posts</a>
             </div>
         </div> 
 

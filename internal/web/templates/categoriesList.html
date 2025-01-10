@@ -8,7 +8,6 @@ body {
 }
 
 nav {
-  list-style-type: none;
   margin: 0;
   padding: 0;
   width: 25%;
@@ -16,6 +15,10 @@ nav {
   position: fixed;
   height: 100%;
   overflow: auto;
+}
+
+nav ul {
+    list-style-type: none;
 }
 
 nav li a {
@@ -85,16 +88,16 @@ th {
 
 <nav>
   <ul>
-    <li><a href="/admin_page">Confirm Moderators Requests</a></li>
-    <li><a href="/moderator_list">Moderators</a></li>
-    <li><a href="/">All Posts</a></li> 
+    <li><a href="/admin_page">Moderator Requests</a></li>
+    <li><a href="/moderator_list">Manage moderator access</a></li>
     <li><a class="active" href="/create_categories">Manage Categories</a></li>
+    <li><a href="/">Back to the feed</a></li> 
   </ul>
 </nav>
 
 <!-- Add a container for your content with the "content" class -->
 <div class="content">
-  <h1>Add category</h1>
+  <h1>Add a category</h1>
   <form action="/add_category" method="POST">
       <input type="text" name="category_name">
       <button type="submit">Add category</button>
@@ -105,8 +108,7 @@ th {
   <table>
     <thead>
       <tr>
-        <th>Category ID</th>
-        <th>Categories</th>
+        <th>Category</th>
         <th>Delete Category</th>
       </tr>
     </thead>
@@ -114,7 +116,6 @@ th {
     <tbody>
       {{range .AllCategories}}
       <tr>
-        <td>{{.CategoryID}}</td>
         <td>{{.Category}}</td>
         <td>
           <form method="post" action="/delete_category">

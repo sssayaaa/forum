@@ -192,7 +192,13 @@
         {{ if  .LoggedIn}}
         <h2>Welcome back,</h2>
         {{$userID:=.User.UserUserID}}
-        <h2>{{.User.FirstName   }}!</h2>
+        {{if ne .User.FirstName ""}}
+            <h2>{{.User.FirstName   }}!</h2>
+        {{else if ne .User.Username ""}}
+            <h2>{{.User.Username }}!</h2>
+        {{else}}
+            <h2>{{.User.Email }}!</h2>
+        {{end}}
         <button onclick="location.href='/logout'">Logout</button><br>
         <!-- notif button -->
         <div class="notification-btn">

@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"errors"
+	"forum/internal/web/handlers/helpers"
 	"net/http"
 	"sync"
 	"time"
@@ -37,7 +39,7 @@ func (rl *rateLimiter) LimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		}
 		// Check if the request is allowed
 		if len(counter) >= rl.maxRequests {
-			http.Error(w, "Too many requests", http.StatusTooManyRequests)
+			helpers.ErrorHandler(w, http.StatusTooManyRequests, errors.New(""))
 			return
 		}
 		// Add the request to the counter

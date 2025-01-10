@@ -113,7 +113,7 @@ func (postObj *PostRepoImpl) GetReaction(postID, userID int) (int, error) {
 
 func (postObj *PostRepoImpl) AddReactionToPostVotes(postID, userID, reaction int) error {
 	_, err := postObj.db.Exec(`
-		INSERT INTO post_votes (post_id, user_id,reaction) VALUES (?, ?, ?);`,
+		INSERT INTO post_votes (post_id, user_id,reaction, created_at, is_seen) VALUES (?, ?, ?);`,
 		postID, userID, reaction)
 	if err != nil {
 		return err

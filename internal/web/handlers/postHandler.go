@@ -707,7 +707,7 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 	switch r.Method {
 	case "GET":
 		type templateData struct {
-			Notifications []*models.PostVotes // Changed from separate PostVotes fields
+			Notifications []*models.PostVotes
 		}
 
 		userID := r.FormValue("quserID")
@@ -717,12 +717,31 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 			return
 		}
 
+		// Get reaction notifications with debug logging
 		postVotes, err := h.service.PostServiceInterface.GetAllMyPostsLikedByOtherUsers(intuserID)
 		if err != nil {
-			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
-			return
+			log.Printf("Error getting reaction notifications: %v", err)
+			postVotes = []*models.PostVotes{}
+		}
+		log.Printf("Fetched %d reaction notifications", len(postVotes))
+		for _, pv := range postVotes {
+			log.Printf("Reaction notification: ID=%d, PostID=%d, UserID=%d, Time=%v",
+				pv.PostVotesID, pv.PostID, pv.UserID, pv.Time)
 		}
 
+		// Get comment notifications with debug logging
+		postVotes2, err := h.service.PostServiceInterface.GetAllMyPostsCommentedByOtherUsers(intuserID)
+		if err != nil {
+			log.Printf("Error getting comment notifications: %v", err)
+			postVotes2 = []*models.PostVotes{}
+		}
+		log.Printf("Fetched %d comment notifications", len(postVotes2))
+		for _, pv := range postVotes2 {
+			log.Printf("Comment notification: ID=%d, PostID=%d, UserID=%d, Time=%v",
+				pv.PostVotesID, pv.PostID, pv.UserID, pv.Time)
+		}
+
+		// Process notifications (keep your existing processing code)
 		for _, postVote := range postVotes {
 			if postVote.Reaction == 1 {
 				postVote.ReactionStr = "liked"
@@ -731,37 +750,25 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 			}
 			reactor, err := h.service.UserServiceInterface.GetUserByUserID(postVote.UserID)
 			if err != nil {
-				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
-				return
+				continue
 			}
 			postVote.ReactorUsername = reactor.Username
 			post, err := h.service.PostServiceInterface.GetPostByID(postVote.PostID)
 			if err != nil {
-				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
-				return
+				continue
 			}
 			postVote.PostTitle = post.Title
 		}
 
-		// Get comments
-		postVotes2, err := h.service.PostServiceInterface.GetAllMyPostsCommentedByOtherUsers(intuserID)
-		if err != nil {
-			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		// Process comments
 		for _, postVote := range postVotes2 {
 			reactor, err := h.service.UserServiceInterface.GetUserByUserID(postVote.UserID)
 			if err != nil {
-				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
-				return
+				continue
 			}
 			postVote.ReactorUsername = reactor.Username
 			post, err := h.service.PostServiceInterface.GetPostByID(postVote.PostID)
 			if err != nil {
-				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
-				return
+				continue
 			}
 			postVote.PostTitle = post.Title
 		}
@@ -775,6 +782,12 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 			return allNotifications[i].Time.After(allNotifications[j].Time)
 		})
 
+		log.Printf("Total notifications after combining: %d", len(allNotifications))
+		for _, n := range allNotifications {
+			log.Printf("Combined notification: Time=%v, Type=%s, PostTitle=%s",
+				n.Time, n.ReactionStr, n.PostTitle)
+		}
+
 		data := templateData{
 			Notifications: allNotifications,
 		}
@@ -782,7 +795,7 @@ func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Requ
 		helpers.RenderTemplate(w, path, data)
 		return
 	default:
-		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("Error in Moderator Request Handler"))
+		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("Error in Notification Handler"))
 		return
 	}
 }

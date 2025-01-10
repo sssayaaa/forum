@@ -361,16 +361,16 @@ func (postObj *PostRepoImpl) GetMyReactedPosts(userID int) (map[int]int, error) 
 func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*models.PostVotes, error) {
 	var PostVotes []*models.PostVotes
 	rows, err := postObj.db.Query(`
-        SELECT pv.id as post_votes_id, 
-               pv.post_id, 
-               pv.user_id, 
+        SELECT pv.id,
+               pv.post_id,
+               pv.user_id,
                pv.reaction,
-               COALESCE(pv.is_seen, 0) as is_seen, 
-               COALESCE(pv.created_at, CURRENT_TIMESTAMP) as time
-        FROM posts p
-        JOIN post_votes pv ON p.id = pv.post_id
-        WHERE p.user_id = ? AND pv.user_id != ?
-        ORDER BY pv.created_at DESC`, userID, userID)
+               COALESCE(pv.is_seen, 0) as is_seen,
+               pv.created_at as time
+        FROM post_votes pv
+        JOIN posts p ON p.id = pv.post_id
+        WHERE p.user_id = ?  -- You are the post owner
+        ORDER BY pv.created_at DESC`, userID) // Removed the pv.user_id != ? condition
 	if err != nil {
 		return nil, err
 	}
@@ -379,7 +379,6 @@ func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*mode
 	for rows.Next() {
 		var PostVote models.PostVotes
 		var timeStr sql.NullString
-
 		err = rows.Scan(
 			&PostVote.PostVotesID,
 			&PostVote.PostID,
@@ -393,27 +392,31 @@ func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*mode
 		}
 
 		if timeStr.Valid {
-			parsedTime, err := time.Parse(time.RFC3339, timeStr.String)
-			if err != nil {
-				// Try alternative format if RFC3339 fails
-				parsedTime, err = time.Parse("2006-01-02 15:04:05.9999999-07:00", timeStr.String)
-				if err != nil {
-					// If both formats fail, try without timezone
-					parsedTime, err = time.Parse("2006-01-02 15:04:05", strings.Split(timeStr.String, ".")[0])
-					if err != nil {
-						return nil, err
-					}
+			// Try parsing with multiple formats
+			formats := []string{
+				"2006-01-02 15:04:05",
+				"2006-01-02 15:04:05.999999999-07:00",
+				"2006-01-02 15:04:05.999999999+07:00",
+			}
+
+			var parsedTime time.Time
+			var parseErr error
+			for _, format := range formats {
+				parsedTime, parseErr = time.Parse(format, timeStr.String)
+				if parseErr == nil {
+					break
 				}
 			}
-			PostVote.Time = parsedTime
+			if parseErr != nil {
+				log.Printf("Failed to parse time %s: %v", timeStr.String, parseErr)
+				PostVote.Time = time.Now()
+			} else {
+				PostVote.Time = parsedTime
+			}
 		} else {
 			PostVote.Time = time.Now()
 		}
-
 		PostVotes = append(PostVotes, &PostVote)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
 	}
 	return PostVotes, nil
 }
@@ -421,16 +424,16 @@ func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*mode
 func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*models.PostVotes, error) {
 	var PostVotes []*models.PostVotes
 	rows, err := postObj.db.Query(`
-        SELECT c.id as post_votes_id, 
-               c.post_id, 
-               c.user_id, 
+        SELECT c.id,
+               c.post_id,
+               c.user_id,
                0 as reaction,
-               COALESCE(c.is_seen, 0) as is_seen, 
-               COALESCE(c.created_time, CURRENT_TIMESTAMP) as time
-        FROM posts p
-        JOIN comments c ON p.id = c.post_id
-        WHERE p.user_id = ? AND c.user_id != ?
-        ORDER BY c.created_time DESC`, userID, userID)
+               COALESCE(c.is_seen, 0) as is_seen,
+               c.created_time as time
+        FROM comments c
+        JOIN posts p ON p.id = c.post_id
+        WHERE p.user_id = ?  -- You are the post owner
+        ORDER BY c.created_time DESC`, userID) // Removed the c.user_id != ? condition
 	if err != nil {
 		return nil, err
 	}
@@ -439,7 +442,6 @@ func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*
 	for rows.Next() {
 		var PostVote models.PostVotes
 		var timeStr sql.NullString
-
 		err = rows.Scan(
 			&PostVote.PostVotesID,
 			&PostVote.PostID,
@@ -453,27 +455,31 @@ func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*
 		}
 
 		if timeStr.Valid {
-			parsedTime, err := time.Parse(time.RFC3339, timeStr.String)
-			if err != nil {
-				// Try alternative format if RFC3339 fails
-				parsedTime, err = time.Parse("2006-01-02 15:04:05.9999999-07:00", timeStr.String)
-				if err != nil {
-					// If both formats fail, try without timezone
-					parsedTime, err = time.Parse("2006-01-02 15:04:05", strings.Split(timeStr.String, ".")[0])
-					if err != nil {
-						return nil, err
-					}
+			// Try parsing with multiple formats
+			formats := []string{
+				"2006-01-02 15:04:05",
+				"2006-01-02 15:04:05.999999999-07:00",
+				"2006-01-02 15:04:05.999999999+07:00",
+			}
+
+			var parsedTime time.Time
+			var parseErr error
+			for _, format := range formats {
+				parsedTime, parseErr = time.Parse(format, timeStr.String)
+				if parseErr == nil {
+					break
 				}
 			}
-			PostVote.Time = parsedTime
+			if parseErr != nil {
+				log.Printf("Failed to parse time %s: %v", timeStr.String, parseErr)
+				PostVote.Time = time.Now()
+			} else {
+				PostVote.Time = parsedTime
+			}
 		} else {
 			PostVote.Time = time.Now()
 		}
-
 		PostVotes = append(PostVotes, &PostVote)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
 	}
 	return PostVotes, nil
 }

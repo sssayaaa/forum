@@ -11,7 +11,6 @@ import (
 	handlers "forum/internal/web/handlers"
 	"log"
 	"net/http"
-	"os"
 )
 
 type Server struct {
@@ -30,10 +29,6 @@ func InitServer(conf *config.Config, ctx context.Context) (*Server, *sql.DB) {
 	handler := handlers.NewHandler(service)
 
 	// Server configuration
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "localhost" + conf.Address // Explicitly bind to localhost
-	}
 
 	cert, err := tls.LoadX509KeyPair("./tls/cert.pem", "./tls/key.pem")
 	if err != nil {
@@ -50,7 +45,7 @@ func InitServer(conf *config.Config, ctx context.Context) (*Server, *sql.DB) {
 	// Initialize Server object
 	ServerObj := Server{
 		httpServer: &http.Server{
-			Addr:      port,
+			Addr:      ":8080",
 			Handler:   handler.InitRouter(),
 			TLSConfig: tlsConfig,
 		},

@@ -16,7 +16,7 @@ FROM alpine:3.16
 
 WORKDIR /web
 
-и
+
 COPY --from=base /web/ /web/
 
 

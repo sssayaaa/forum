@@ -17,18 +17,11 @@ For communication within the forum:
 - Posts and comments will be visible to all users (registered or not).
 - Non-registered users can only view posts and comments.
 
-### Docker usage
 
-Building the Docker
+Run MakeFile
 
-```CMD/Terminal
-docker build -t forum .
-```
-
-Run Docker
-
-```CMD/Terminal
-docker run --name=forum -p 8080:8080 --rm forum
+```Text
+make run
 ```
 
 Check the Container

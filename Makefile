@@ -1,8 +1,24 @@
+IMAGE_NAME=forum
+
+
 build:
-		docker build -t forum .
-run-img:
-		docker run --name=forum -p 8080:8080 --rm -d forum
+	docker build -t $(IMAGE_NAME) .
+
+
 run:
-		go run cmd/main.go
+	docker run -d -p 8080:8080 --name $(IMAGE_NAME)-container $(IMAGE_NAME)
+
+
 stop:
-		docker stop forum
+	docker stop $(IMAGE_NAME)-container
+
+
+remove:
+	docker rm $(IMAGE_NAME)-container
+
+
+clean: stop remove
+	docker rmi $(IMAGE_NAME)
+
+
+all: build run

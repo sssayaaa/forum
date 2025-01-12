@@ -33,7 +33,8 @@ docker ps -a
 Stop the container
 
 ```CMD/Terminal
-docker stop forum
+make stop
+make remove
 ```
 
 ### Usage

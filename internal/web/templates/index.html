@@ -2,10 +2,87 @@
 <html>
 <head>
     <title>Home | Forum</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Moo+Lah+Lah&family=Rubik+Puddles&display=swap" rel="stylesheet">
     <style>
+
+.header-container {
+  display: flex; /* Flexbox layout for horizontal alignment */
+  justify-content: space-between; /* Push items to opposite ends */
+  align-items: center; /* Center vertically */
+  padding: 10px 20px; /* Optional padding */
+  background-color: hotpink; /* Background color matching your theme */
+}
+
+.header-container h1 {
+    color: white;
+  margin-left: 100px; /* Remove default margin */
+  font-size: 50px;
+  /* font-family: "Moo Lah Lah", serif; */
+  font-family: "Rubik Puddles", serif;
+  font-style: normal;
+}
+
+.greeting {
+  margin-right: 50px; /* Remove margin for cleaner appearance */
+  font-size: 18px; /* Adjust font size for balance */
+  color: white; /* To contrast with background */
+  text-align: right; /* Align the greeting text to the right within its container */
+  white-space: nowrap; /* Prevent the greeting text from wrapping */
+  overflow: hidden; /* Hide overflow if the container is too small */
+  text-overflow: ellipsis; /* Add "..." if text overflows */
+}
+
+.greeting a{
+    color: white;
+}
+
+nav ul {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: hotpink;
+      display: flex; /* This makes the items display horizontally */
+    }
+
+nav li {
+  flex-grow: 1; /* Make the nav items take equal width */
+}
+
+nav li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+nav li a:hover {
+    background-color: rgb(255, 55, 132);
+}
+
+.posts-header {
+    display: flex;
+}
+
+.posts-header {
+  display: flex; /* Flexbox for horizontal alignment */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Align vertically */
+  gap: 100px; /* Space between the h2 and dropdown */
+  margin-bottom: 20px; /* Optional: add space below the header */
+}
+
+.posts-header h2 {
+  margin: 0; /* Remove any default margin */
+}
+
+
 /* Dropdown styles */
 .dropbtn {
-    background-color: #04AA6D;
+    background-color: hotpink;
     color: white;
     padding: 16px;
     font-size: 16px;
@@ -42,12 +119,12 @@
 }
 
 .dropdown:hover .dropbtn {
-    background-color: #3e8e41;
+    background-color: #8e3e76;
 }
 
 /* Frame and post container styles */
 .frame {
-    border: 1px solid #ccc;
+    border: 1px solid #bababa;
     border-radius: 5px;
     padding: 15px;
     margin: 20px;
@@ -55,6 +132,10 @@
     margin-left: auto;
     margin-right: auto;
 }
+
+.create-post-form {
+            display: none; /* Hide the form by default */
+        }
 
 .post {
     border: 1px solid #171515;
@@ -189,54 +270,25 @@
     max-width: 100%;
 }
 
-nav ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  background-color: #333;
-  width: 200px;
-  float: left;
-}
-
-nav li {
-  float: left;
-}
-
-nav li a {
-  display: block;
-  color: white;
-  text-align: center;
-  padding: 14px 16px;
-  text-decoration: none;
-  
-}
-
-/* Change the link color to #111 (black) on hover */
-nav li a:hover {
-  background-color: #111;
-}
     </style>
 </head>
 <body>
     <div align="center">
-        <div>
-            <header>
-                <a href="/">FORUM</a>
-            </header>
-        </div>
-     
+            
         {{ if  .LoggedIn}}
-        <div class="greeting">
-            <h2>Welcome back,</h2>
-            {{$userID:=.User.UserUserID}}
-                {{if ne .User.FirstName ""}}
-                    <h2>{{.User.FirstName   }}!</h2>
-                {{else if ne .User.Username ""}}
-                    <h2>{{.User.Username }}!</h2>
-                {{else}}
-                    <h2>{{.User.Email }}!</h2>
-                {{end}}
+        <div class="header-container">
+            <h1>My Forum</h1>
+            <div class="greeting">
+                <h2>Welcome back,</h2>
+                {{$userID:=.User.UserUserID}}
+                    {{if ne .User.FirstName ""}}
+                        <h2>{{.User.FirstName   }}!</h2>
+                    {{else if ne .User.Username ""}}
+                        <h2>{{.User.Username }}!</h2>
+                    {{else}}
+                        <h2>{{.User.Email }}!</h2>
+                    {{end}}
+            </div>
         </div>
         
         <nav>
@@ -254,99 +306,55 @@ nav li a:hover {
                         </form>
                     </li>
                 {{ end }}
+                <li><a href="#" id="new-post-btn">New Post</a></li>
                 <li><a href="/logout">Logout</a></li>
             </ul>
         </nav>
-        
-        <!-- <button onclick="location.href='/logout'">Logout</button><br> -->
-        <!-- notif button -->
-        <!-- <div class="notification-btn">
-            <button onclick="location.href='/notifications?quserID={{$userID}}'">Notifications</button>
-            <span class="notification-badge" id="notificationBadge"></span>
-        </div> -->
-    
-        <!-- <script>
-        function checkNewNotifications() {
-            fetch('/api/check-notifications?userID={{$userID}}')
-                .then(response => {
-                    if (response.status === 429) { // Too Many Requests
-                        console.log('Rate limit reached, will try again later');
-                        return;
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data) {
-                        const badge = document.getElementById('notificationBadge');
-                        if (data.count > 0) {
-                            badge.textContent = data.count;
-                            badge.classList.add('show');
-                        } else {
-                            badge.classList.remove('show');
-                        }
-                    }
-                })
-                .catch(error => console.error('Error checking notifications:', error));
-        }
-    
-        // Check notifications once when page loads
-        checkNewNotifications();
-        
-        // Then check every 2 minutes instead of every 30 seconds
-        setInterval(checkNewNotifications, 120000); // 120000 ms = 2 minutes
-        </script> -->
-
-        <!-- shfkshfkvhjdddddddddddddddddddh -->
-
-
-
-
-        <!-- <br>
-        <button onclick="location.href='/created_my_posts?quserID={{$userID}}'">Show activity history</button><br>
-        <br> -->
-            <!-- {{if eq .User.Role "admin"}}
-            <button onclick="location.href='/admin_page'">Admin Mode</button><br>
-            {{end}}
-
-            {{if eq .User.Role "user"}}
-            <form action="/moderator" method="post">
-                <button class="moderator_btn" type="submit">Apply to be a Moderator</button>
+        <div class="create-post-form" id="create-post-form">
+            <form action="/submit-post" enctype="multipart/form-data" method="post">
+                <h2>Create a new post</h2>
+                <p>Choose at least one category:</p>
+                {{range .AllCategories}}
+                <label><input type="checkbox" name="preference" value="{{.}}"> {{.}} </label>
+                {{end}}
+                <br><br>
+                <label for="posttitle">Write your Post Title:</label><br>
+                <textarea id name="posttitle" rows="2" cols="50"></textarea><br>
+                <p class="fine-print">*Minimum 2, maximum 50 characters</p>
+                <label for="postcontent">Write your Post Content:</label><br>
+                <textarea id="postcontent" name="postcontent" rows="4" cols="50"></textarea><br>
+                <input type="file" name="files" multiple>
+                <input type="submit" value="Submit">
+                <p class="fine-print">*You can attach only one file</p>
             </form>
-            {{end}} -->
-
-
-        <form action="/submit-post" enctype="multipart/form-data" method="post">
-            <h2>Create a new post</h2>
-            <p>Choose at least one category:</p>
-            {{range .AllCategories}}
-            <label><input type="checkbox" name="preference" value="{{.}}"> {{.}} </label>
-            {{end}}
-            <br><br>
-            <label for="posttitle">Write your Post Title:</label><br>
-            <textarea id name="posttitle" rows="2" cols="50"></textarea><br>
-            <p class="fine-print">*Minimum 2, maximum 50 characters</p>
-            <label for="postcontent">Write your Post Content:</label><br>
-            <textarea id="postcontent" name="postcontent" rows="4" cols="50"></textarea><br>
-            <input type="file" name="files" multiple>
-            <input type="submit" value="Submit">
-            <p class="fine-print">*You can attach only one file</p>
-        </form>
-
-        <div class="dropdown">
-            <button class="dropbtn">Filter</button>
-            <div class="dropdown-content">
-              <a href="/">All</a>
-              {{range .AllCategories}}
-              <a href="/filter/{{.}}">{{.}}</a>
-              {{end}}
-              <a href="/filter/CreatedPosts">My Posts</a>
-              <a href="/filter/LikedPosts">My Liked/Disliked Posts</a>
-            </div>
-        </div> 
+        </div>
+        <script>
+            // to hide and unhide
+            document.getElementById('new-post-btn').addEventListener('click', function (e) {
+                e.preventDefault(); 
+                const form = document.getElementById('create-post-form');
+                form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
+            });
+        </script>
 
         <br>
         <div class="frame">
             <div class="content">
+
+                <div class="posts-header">
+                    <h2>Check out the posts</h2>
+                    <div class="dropdown">
+                        <button class="dropbtn">Filter</button>
+                        <div class="dropdown-content">
+                            <a href="/">All</a>
+                            {{range .AllCategories}}
+                            <a href="/filter/{{.}}">{{.}}</a>
+                            {{end}}
+                            <a href="/filter/CreatedPosts">My Posts</a>
+                            <a href="/filter/LikedPosts">My Liked/Disliked Posts</a>
+                        </div>
+                    </div> 
+                </div>
                 
                 {{range .AllPosts}}
                     {{if or (.IsApproved) (eq .UserRole "moderator") (eq .UserRole "admin") (eq .UserID $userID)}}
@@ -502,23 +510,29 @@ nav li a:hover {
         
 
         {{else}}
+        <div class="header-container">
+            <h1>My Forum</h1>
+            <div class="greeting">
+                <h2>Welcome Guest!</h2>
+                <a href="/login">Login</a>
+                or
+                <a href="/registration">Register</a>
+            </div>
+        </div>
         <div class="frame">
-            <h2>Welcome Guest!</h2>
-            <p>Please select an option:</p>
-            <button onclick="location.href='/login'">Login</button>
-            <button onclick="location.href='/registration'">Register</button>
-            <br>
-            <br>
-            <div class="dropdown">
-                <button class="dropbtn">Filter</button>
-                <div class="dropdown-content">
-                  <a href="/">All</a>
-                  {{range .AllCategories}}
-                  <a href="/filter/{{.}}">{{.}}</a>
-                  {{end}}
-                </div>
-            </div> 
-            <br>
+            <div class="posts-header">
+                <h2>Check out the posts</h2>
+                <div class="dropdown">
+                    <button class="dropbtn">Filter</button>
+                    <div class="dropdown-content">
+                      <a href="/">All</a>
+                      {{range .AllCategories}}
+                      <a href="/filter/{{.}}">{{.}}</a>
+                      {{end}}
+                    </div>
+                </div> 
+            </div>
+            
             <div class = "content">
                 {{range .AllPosts}}
                 {{if .IsApproved}}

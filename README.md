@@ -17,7 +17,6 @@ For communication within the forum:
 - Posts and comments will be visible to all users (registered or not).
 - Non-registered users can only view posts and comments.
 
-
 Run MakeFile
 
 ```Text
@@ -74,4 +73,4 @@ password: admin
 
 # Authors:
 
-dabduali & ssainova
+dabduali & ssainova & aospanova

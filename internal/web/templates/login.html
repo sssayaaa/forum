@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
     <title>Login Page</title>
@@ -18,5 +18,151 @@
             <button onclick="location.href='/'">Back Main</button><br>
         </form>
     </div>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Moo+Lah+Lah&family=Rubik+Puddles&display=swap" rel="stylesheet">
+    <title>Login Page</title>
+    <style>
+        body {
+            background-color: white;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .header-container {
+            display: flex; /* Flexbox layout for horizontal alignment */
+            justify-content: space-between; /* Push items to opposite ends */
+            align-items: center; /* Center vertically */
+            padding: 10px 20px; /* Optional padding */
+            background-color: hotpink; /* Background color matching your theme */
+            }
+
+        .header-container h1 {
+            color: white;
+            margin-left: 100px; /* Remove default margin */
+            font-size: 50px;
+            /* font-family: "Moo Lah Lah", serif; */
+            font-family: "Rubik Puddles", serif;
+            font-style: normal;
+        }
+
+        .greeting {
+            margin-right: 50px; /* Remove margin for cleaner appearance */
+            font-size: 15px; /* Adjust font size for balance */
+            color: white; /* To contrast with background */
+            text-align: right; /* Align the greeting text to the right within its container */
+            white-space: nowrap; /* Prevent the greeting text from wrapping */
+            overflow: hidden; /* Hide overflow if the container is too small */
+            text-overflow: ellipsis; /* Add "..." if text overflows */
+        }
+
+        .login-container {
+            background-color: hotpink;
+            padding: 40px 30px;
+            border-radius: 16px;
+            width: 320px;
+            margin: 40px auto; /* Reduced margin to make the form closer to the header */
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .login-container h2 {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .login-container label {
+            color: white;
+            font-size: 18px;
+        }
+
+        .login-container input[type="email"],
+        .login-container input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid white;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .login-container input[type="email"]:focus,
+        .login-container input[type="password"]:focus {
+            border-color: rgb(255, 55, 132);
+            outline: none;
+        }
+
+        .login-container input[type="checkbox"] {
+            margin-top: 20px;
+        }
+
+        .login-container .login-button,
+        .login-container .oauth-button,
+        .login-container .back-button {
+            background-color: white;
+            color: hotpink;
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            width: 80%;
+            margin-bottom: 15px; /* More space after each button */
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .login-container .login-button {
+            margin-top: 20px; /* Add some space after the checkbox */
+            margin-bottom: 25px;
+        }
+
+        .login-container .oauth-button {
+            margin-bottom: 25px; /* More space after the OAuth buttons */
+        }
+
+        .login-container .login-button:hover,
+        .login-container .oauth-button:hover,
+        .login-container .back-button:hover {
+            background-color: rgb(255, 55, 132);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header-container">
+        <h1>My Forum</h1>
+        <div class="greeting">
+            <h2>Welcome back!</h2>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <div class="login-container">
+        <h2>Login</h2>
+        <form action="/login" method="post">
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email" required><br><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <input type="checkbox" id="admin" name="admin"> Login as Admin<br><br>
+            <input type="submit" value="Login">
+        </form>
+        <a href="/auth/google/in" class="oauth-button">Sign In with Google</a>
+        <a href="/auth/github/in" class="oauth-button">Sign In with Github</a>
+        <a href="/" class="back-button">Homepage</a>
+    </div>
+
 </body>
 </html>

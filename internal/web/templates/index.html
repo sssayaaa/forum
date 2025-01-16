@@ -26,7 +26,7 @@
 
 .greeting {
   margin-right: 50px; /* Remove margin for cleaner appearance */
-  font-size: 18px; /* Adjust font size for balance */
+  font-size: 15px; /* Adjust font size for balance */
   color: white; /* To contrast with background */
   text-align: right; /* Align the greeting text to the right within its container */
   white-space: nowrap; /* Prevent the greeting text from wrapping */
@@ -65,20 +65,16 @@ nav li a:hover {
 
 .posts-header {
     display: flex;
-}
-
-.posts-header {
-  display: flex; /* Flexbox for horizontal alignment */
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Align vertically */
-  gap: 100px; /* Space between the h2 and dropdown */
-  margin-bottom: 20px; /* Optional: add space below the header */
+    justify-content: space-between; /* Push the text and button to opposite ends */
+    align-items: center; /* Align items vertically */
+    padding: 10px 20px; /* Optional padding */
 }
 
 .posts-header h2 {
-  margin: 0; /* Remove any default margin */
+    margin: 0 auto; /* Center the heading within the flex container */
+  flex-grow: 1; /* Allow it to take as much space as possible */
+  text-align: center; /* Ensure the text itself is centered */
 }
-
 
 /* Dropdown styles */
 .dropbtn {
@@ -87,6 +83,7 @@ nav li a:hover {
     padding: 16px;
     font-size: 16px;
     border: none;
+    border-radius: 12px;
 }
 
 .dropdown {
@@ -342,7 +339,7 @@ nav li a:hover {
             <div class="content">
 
                 <div class="posts-header">
-                    <h2>Check out the posts</h2>
+                    <h2>Feed</h2>
                     <div class="dropdown">
                         <button class="dropbtn">Filter</button>
                         <div class="dropdown-content">
@@ -521,7 +518,7 @@ nav li a:hover {
         </div>
         <div class="frame">
             <div class="posts-header">
-                <h2>Check out the posts</h2>
+                <h2>Feed</h2>
                 <div class="dropdown">
                     <button class="dropbtn">Filter</button>
                     <div class="dropdown-content">

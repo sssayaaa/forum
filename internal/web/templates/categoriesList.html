@@ -1,132 +1,192 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style>
-body {
-  margin: 0;
-  display: flex;
-}
+  <title>Categories Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Puddles&display=swap" rel="stylesheet">
+  <style>
+    /* Reset and base styling */
+    body {
+      margin: 0;
+      font-family: 'Times New Roman', Times, serif;
+    }
 
-nav {
-  margin: 0;
-  padding: 0;
-  width: 25%;
-  background-color: #f1f1f1;
-  position: fixed;
-  height: 100%;
-  overflow: auto;
-}
+    /* Header styles */
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: hotpink;
+    }
 
-nav ul {
-    list-style-type: none;
-}
+    .header-container h1 {
+      color: white;
+      margin: 0;
+      font-size: 36px;
+      font-family: "Rubik Puddles", serif;
+    }
 
-nav li a {
-  display: block;
-  color: #000;
-  padding: 8px 16px;
-  text-decoration: none;
-}
+    .greeting {
+      color: white;
+      font-size: 18px;
+      text-align: right;
+    }
 
-nav li a.active {
-  background-color: #04AA6D;
-  color: white;
-}
+    /* Navigation styles */
+    nav {
+      margin: 0;
+      padding: 0;
+      width: 25%;
+      background-color: #f1f1f1;
+      position: fixed;
+      height: 100%;
+      overflow: auto;
+    }
 
-nav li a:hover:not(.active) {
-  background-color: #555;
-  color: white;
-}
+    nav ul {
+      list-style-type: none;
+      padding: 0;
+    }
 
-.content {
-  flex: 1;
-  padding: 16px;
-  margin-left: 25%; /* Adjust based on the width of your nav */
-}
+    nav li a {
+      display: block;
+      color: #000;
+      padding: 12px 20px;
+      text-decoration: none;
+      font-size: 16px;
+    }
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
+    nav li a.active {
+      background-color: hotpink;
+      color: white;
+    }
 
-table, th, td {
-  border: 1px solid #ddd;
-}
+    nav li a:hover:not(.active) {
+      background-color: rgb(255, 55, 132);
+      color: white;
+    }
 
-th, td {
-  padding: 8px;
-  text-align: left;
-}
+    /* Content styles */
+    .content {
+      margin-left: 25%; /* Matches the nav width */
+      padding: 20px;
+    }
 
-th {
-  background-color: #04AA6D;
-  color: white;
-}
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
 
-/* Style for buttons */
-.approve-btn, .reject-btn {
-  padding: 6px 10px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
+    table, th, td {
+      border: 1px solid #ddd;
+    }
 
-.reject-btn {
-  background-color: #f44336;
-  margin-left: 5px;
-}
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
 
-/* Style for hidden input fields */
-.hidden-input {
-  display: none;
-}
-</style>
+    th {
+      background-color: hotpink;
+      color: white;
+    }
+
+    /* Button styles */
+    .reject-btn {
+      padding: 6px 12px;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .reject-btn:hover {
+      opacity: 0.8;
+    }
+
+    .add-category-btn {
+      padding: 6px 12px;
+      background-color: hotpink;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .add-category-btn:hover {
+      opacity: 0.8;
+    }
+
+    /* Style for "No categories available" message */
+    .no-categories {
+      font-size: 18px;
+      color: gray;
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
+<!-- Header -->
+<div class="header-container">
+  <h1>My Forum</h1>
+  <div class="greeting">
+    <h2>Admin mode</h2>
+  </div>
+</div>
+
+<!-- Navigation -->
 <nav>
   <ul>
     <li><a href="/admin_page">Moderator Requests</a></li>
     <li><a href="/moderator_list">Manage moderator access</a></li>
     <li><a class="active" href="/create_categories">Manage Categories</a></li>
-    <li><a href="/">Back to the feed</a></li> 
+    <li><a href="/">Back to the feed</a></li>
+    <li><a href="/logout">Logout</a></li>
   </ul>
 </nav>
 
-<!-- Add a container for your content with the "content" class -->
+<!-- Content -->
 <div class="content">
   <h1>Add a category</h1>
   <form action="/add_category" method="POST">
-      <input type="text" name="category_name">
-      <button type="submit">Add category</button>
+      <input type="text" name="category_name" placeholder="Enter category name" required>
+      <button type="submit" class="add-category-btn">Add category</button>
   </form>
-  <br>
-  <br>
-  <br>
-  <table>
-    <thead>
-      <tr>
-        <th>Category</th>
-        <th>Delete Category</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {{range .AllCategories}}
-      <tr>
-        <td>{{.Category}}</td>
-        <td>
-          <form method="post" action="/delete_category">
-            <input type="hidden" name="CategoryId" value="{{.CategoryID}}">
-            <button class="reject-btn" type="submit">Delete Category</button>
-          </form>
-        </td>
-      </tr>
-      {{end}}
-    </tbody>
-  </table>
+  <br><br><br>
+  {{if .AllCategories}}
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Delete Category</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .AllCategories}}
+        <tr>
+          <td>{{.Category}}</td>
+          <td>
+            <form method="post" action="/delete_category">
+              <input type="hidden" name="CategoryId" value="{{.CategoryID}}">
+              <button class="reject-btn" type="submit">Delete Category</button>
+            </form>
+          </td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  {{else}}
+    <p class="no-categories">No categories available</p>
+  {{end}}
 </div>
 
 </body>

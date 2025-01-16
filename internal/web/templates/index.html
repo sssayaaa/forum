@@ -59,6 +59,10 @@ nav li a {
     text-decoration: none;
 }
 
+button {
+    font-family: 'Times New Roman', Times, serif;
+}
+
 nav li a:hover {
     background-color: rgb(255, 55, 132);
 }
@@ -285,6 +289,11 @@ nav li a:hover {
                     {{else}}
                         <h2>{{.User.Email }}!</h2>
                     {{end}}
+                {{ if eq .User.Role "user" }}
+                    <form action="/moderator" method="post">
+                        <button class="moderator_btn" type="submit">Apply to be a Moderator</button>
+                    </form>
+                {{ end }}
             </div>
         </div>
         
@@ -295,13 +304,6 @@ nav li a:hover {
                 <li><a href="/created_my_posts?quserID={{ $userID }}">My Activity History</a></li>
                 {{ if eq .User.Role "admin" }}
                     <li><a href="/admin_page">Admin Mode</a></li>
-                {{ end }}
-                {{ if eq .User.Role "user" }}
-                    <li>
-                        <form action="/moderator" method="post">
-                            <button class="moderator_btn" type="submit">Apply to be a Moderator</button>
-                        </form>
-                    </li>
                 {{ end }}
                 <li><a href="#" id="new-post-btn">New Post</a></li>
                 <li><a href="/logout">Logout</a></li>

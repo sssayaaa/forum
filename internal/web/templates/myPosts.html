@@ -1,123 +1,164 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style>
-body {
-  margin: 0;
-  display: flex;
-}
+  <title>Created Posts | Activity Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Puddles&display=swap" rel="stylesheet">
+  <style>
+    /* Reset and base styling */
+    body {
+      margin: 0;
+      font-family: 'Times New Roman', Times, serif;
+    }
 
-nav {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  width: 25%;
-  background-color: #f1f1f1;
-  position: fixed;
-  height: 100%;
-  overflow: auto;
-}
+    /* Header styles */
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: hotpink;
+    }
 
-nav li a {
-  display: block;
-  color: #000;
-  padding: 8px 16px;
-  text-decoration: none;
-}
+    .header-container h1 {
+      color: white;
+      margin: 0;
+      font-size: 36px;
+      font-family: "Rubik Puddles", serif;
+    }
 
-nav li a.active {
-  background-color: #04AA6D;
-  color: white;
-}
+    .greeting {
+      color: white;
+      font-size: 18px;
+      text-align: right;
+    }
 
-nav li a:hover:not(.active) {
-  background-color: #555;
-  color: white;
-}
+    /* Navigation styles */
+    nav {
+      margin: 0;
+      padding: 0;
+      width: 25%;
+      background-color: #f1f1f1;
+      position: fixed;
+      height: 100%;
+      overflow: auto;
+    }
 
-.content {
-  flex: 1;
-  padding: 16px;
-  margin-left: 25%; /* Adjust based on the width of your nav */
-}
+    nav ul {
+      list-style-type: none;
+      padding: 0;
+    }
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
+    nav li a {
+      display: block;
+      color: #000;
+      padding: 12px 20px;
+      text-decoration: none;
+      font-size: 16px;
+    }
 
-table, th, td {
-  border: 1px solid #ddd;
-}
+    nav li a.active {
+      background-color: hotpink;
+      color: white;
+    }
 
-th, td {
-  padding: 8px;
-  text-align: left;
-}
+    nav li a:hover:not(.active) {
+      background-color: rgb(255, 55, 132);
+      color: white;
+    }
 
-th {
-  background-color: #04AA6D;
-  color: white;
-}
+    /* Content styles */
+    .content {
+      margin-left: 25%; /* Matches the nav width */
+      padding: 20px;
+    }
 
-/* Style for buttons */
-.approve-btn, .reject-btn {
-  padding: 6px 10px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
 
-.reject-btn {
-  background-color: #f44336;
-  margin-left: 5px;
-}
+    table, th, td {
+      border: 1px solid #ddd;
+    }
 
-/* Style for hidden input fields */
-.hidden-input {
-  display: none;
-}
-</style>
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: hotpink;
+      color: white;
+    }
+
+    a {
+      color: hotpink;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    /* Style for "No posts yet" message */
+    .no-posts {
+      font-size: 18px;
+      color: gray;
+      text-align: center;
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
+<!-- Header -->
+<div class="header-container">
+  <h1>My Forum</h1>
+  <div class="greeting">
+    <h2>Activity Hub</h2>
+  </div>
+</div>
+
+<!-- Navigation -->
 <nav>
   <ul>
     {{$userID:=.UserID}}
     <li><a class="active" href="/created_my_posts?quserID={{$userID}}">Created Posts</a></li>
     <li><a href="/reacted_posts?quserID={{$userID}}">Reacted Posts</a></li>
-    <li><a href="/reacted_comments?quserID={{$userID}}">Reacted Commnets</a></li>
-    <li><a href="/commented_posts?quserID={{$userID}}">Commented Posts</a></li> 
+    <li><a href="/reacted_comments?quserID={{$userID}}">Reacted Comments</a></li>
+    <li><a href="/commented_posts?quserID={{$userID}}">Commented Posts</a></li>
+    <li><a href="/">Back to the feed</a></li> 
+    <li><a href="/logout">Logout</a></li>
   </ul>
 </nav>
 
-<!-- Add a container for your content with the "content" class -->
+<!-- Content -->
 <div class="content">
-  <table>
-    <thead>
-      <tr>
-        <th>Post ID</th>
-        <th>Title</th>
-        <th>Content</th>
-        <th>Time</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {{range .MyPosts}}
-      <tr>
-        <td>{{.PostID}}</td>
-        <td>{{.Title}}</td>
-        <td>{{.Content}}</td>
-        <td>{{.CreatedTimeString}}</td>
-      </tr>
-      {{end}}
-    </tbody>
-  </table>
-  <button onclick="location.href='/'">Back Main</button><br>
-
+  {{if .MyPosts}}
+    <table>
+      <thead>
+        <tr>
+          <th>Post Title</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .MyPosts}}
+        <tr>
+          <td><a href="/comments/{{.PostID}}">{{.Title}}</a></td>
+          <td>{{.CreatedTimeString}}</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  {{else}}
+    <p class="no-posts">No posts yet</p>
+  {{end}}
 </div>
+
 </body>
 </html>

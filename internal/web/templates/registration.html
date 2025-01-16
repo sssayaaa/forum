@@ -1,10 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration Page</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Moo+Lah+Lah&family=Rubik+Puddles&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: white;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        .header-container {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 20px; 
+            background-color: hotpink; 
+        }
+
+        .header-container h1 {
+            color: white;
+            margin-left: 100px; 
+            font-size: 50px;
+            font-family: "Rubik Puddles", serif;
+            font-style: normal;
+        }
+
+        .greeting {
+            margin-right: 50px; 
+            font-size: 15px; 
+            color: white; 
+            text-align: right; 
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+
+        .greeting a{
+            color: white;
+        }
+
+        .registration-container {
+            background-color: hotpink;
+            padding: 40px 30px;
+            border-radius: 16px;
+            width: 400px; 
+            margin: 40px auto;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .registration-container h2 {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .registration-container label {
+            color: white;
+            font-size: 18px;
+        }
+
+        .registration-container input[type="text"],
+        .registration-container input[type="email"],
+        .registration-container input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid white;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .registration-container input[type="text"]:focus,
+        .registration-container input[type="email"]:focus,
+        .registration-container input[type="password"]:focus {
+            border-color: rgb(255, 55, 132);
+            outline: none;
+        }
+
+        .registration-container input[type="checkbox"] {
+            margin-top: 20px;
+        }
+
+        .registration-container .register-button,
+        .registration-container .oauth-button,
+        .registration-container .back-button {
+            background-color: white;
+            color: hotpink;
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            width: 80%;
+            margin-bottom: 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .registration-container .register-button {
+            margin-top: 20px; /* Space after the admin checkbox */
+        }
+
+        .registration-container .oauth-button {
+            margin-bottom: 25px; /* Extra space after OAuth buttons */
+        }
+
+        .registration-container .register-button:hover,
+        .registration-container .oauth-button:hover,
+        .registration-container .back-button:hover {
+            background-color: rgb(255, 55, 132);
+            color: white;
+        }
+
+        .registration-container p {
+            color: white;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <div align="center">
+
+    <!-- Header -->
+    <div class="header-container">
+        <h1>My Forum</h1>
+        <div class="greeting">
+            <h2>Welcome!</h2>
+        </div>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="registration-container">
         <h2>Registration</h2>
         <form action="/registration" method="post">
             <label for="firstName">First Name:</label><br>
@@ -22,20 +155,14 @@
             <label for="password">Password:</label><br>
             <input type="password" id="password" name="password" required><br><br>
 
-            <!-- Add Admin checkbox -->
-            <input type="checkbox" id="admin" name="admin"> Register as Admin<br><br><br><br>
-
-
-            <p>{{.}}</p>
-            
-            <input type="submit" value="Register">
-            <button><a href="/auth/google/in" id="signIn">Sign Up with Google</a></button>
-            <button><a href="/auth/github/in" id="signIn">Sign In with Github</a></button>
-            <button onclick="location.href='/'">Back Main</button><br>
-
-            <!-- <button><a href="/auth/google/register" id="signUp">Sign Up with Google</a></button>
-            <button><a href="/auth/github/register" id="signUp">Sign Up with Github</a></button> -->
+            <button type="submit" class="register-button">Register</button>
         </form>
+
+        <!-- OAuth Buttons -->
+        <a href="/auth/google/in" class="oauth-button">Sign Up with Google</a>
+        <a href="/auth/github/in" class="oauth-button">Sign Up with GitHub</a>
+        <a href="/" class="back-button">Homepage</a>
     </div>
+
 </body>
 </html>

@@ -74,3 +74,11 @@ password: admin
 # Authors:
 
 dabduali & ssainova & aospanova
+
+# Notes
+
+- Fix Notifications
+- Flash errors
+- longer session
+- buttons are different styles it is driving me nuts
+- admin log in

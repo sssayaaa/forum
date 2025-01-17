@@ -1,88 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
-<style>
-body {
-  margin: 0;
-  display: flex;
-}
+  <title>Notifications | My Forum</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Puddles&display=swap" rel="stylesheet">
+  <style>
+    /* Reset and base styling */
+    body {
+      margin: 0;
+      font-family: 'Times New Roman', Times, serif;
+    }
 
-nav {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-  width: 25%;
-  background-color: #f1f1f1;
-  position: fixed;
-  height: 100%;
-  overflow: auto;
-}
+    /* Header styles */
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: hotpink;
+    }
 
-nav li a {
-  display: block;
-  color: #000;
-  padding: 8px 16px;
-  text-decoration: none;
-}
+    .header-container h1 {
+      color: white;
+      margin: 0;
+      font-size: 36px;
+      font-family: "Rubik Puddles", serif;
+    }
 
-nav li a.active {
-  background-color: #04AA6D;
-  color: white;
-}
+    .greeting {
+      color: white;
+      font-size: 18px;
+      text-align: right;
+    }
 
-nav li a:hover:not(.active) {
-  background-color: #555;
-  color: white;
-}
+    /* Content styling */
+    .content {
+      padding: 20px;
+      font-size: 16px;
+    }
 
-.content {
-  flex: 1;
-  padding: 16px;
-}
+    /* Table styling */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-bottom: 20px;
+    }
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
+    table, th, td {
+      border: 1px solid #ddd;
+    }
 
-table, th, td {
-  border: 1px solid #ddd;
-}
+    th, td {
+      padding: 8px 12px; /* Thinner rows */
+      text-align: left;
+      font-size: 14px; /* Adjust font size */
+    }
 
-th, td {
-  padding: 8px;
-  text-align: left;
-}
+    th {
+      background-color: hotpink;
+      color: white;
+      font-size: 16px;
+    }
 
-th {
-  background-color: #04AA6D;
-  color: white;
-}
+    /* Button styling */
+    button, .seen-btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: hotpink;
+      color: white;
+      font-size: 14px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
 
-.seen-btn {
-  padding: 6px 10px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
+    button:hover, .seen-btn:hover {
+      background-color: #ff6699;
+    }
 
-.seen-text {
-  color: #666;
-  margin: 0;
-}
+    /* Seen text styling */
+    .seen-text {
+      color: hotpink;
+      font-weight: bold;
+      margin: 0;
+      font-size: 14px;
+    }
 
-/* Add animation for smooth transition */
-.fade-out {
-  opacity: 0;
-  transition: opacity 0.3s ease-out;
-}
-</style>
+    /* Load More button */
+    .load-more-btn {
+      margin-top: 20px;
+      display: block;
+      background-color: white;
+      color: hotpink;
+      border: 1px solid hotpink;
+      border-radius: 8px;
+      padding: 10px 15px;
+      font-size: 14px;
+      text-align: center;
+      width: 150px;
+      margin-left: auto;
+      margin-right: auto;
+      cursor: pointer;
+    }
+
+    .load-more-btn:hover {
+      background-color: hotpink;
+      color: white;
+    }
+  </style>
 </head>
 <body>
+
+<!-- Header -->
+<div class="header-container">
+  <h1>My Forum</h1>
+  <div class="greeting">
+    <h2>Notifications</h2>
+  </div>
+</div>
+
+<!-- Notifications Table -->
 <div class="content">
-  <table>
+  <table id="notificationsTable">
     <thead>
       <tr>
         <th>Notifications</th>
@@ -92,7 +132,7 @@ th {
     </thead>
     <tbody>
       {{range .Notifications}}
-      <tr data-notification-id="{{.PostVotesID}}">
+      <tr class="notification-row" data-notification-id="{{.PostVotesID}}">
         <td>
           Your post {{.PostTitle}} was 
           {{if .ReactionStr}}
@@ -115,78 +155,82 @@ th {
     </tbody>
   </table>
 
-  <script>
-    function markAsSeen(notificationId) {
-      console.log('Marking notification as seen:', notificationId);
-      
-      // Find the button that was clicked
-      const button = document.querySelector(`tr[data-notification-id="${notificationId}"] .seen-btn`);
-      
-      // Disable the button immediately to prevent double-clicks
-      if (button) {
-        button.disabled = true;
-      }
+  <!-- Load More Button -->
+  <button id="loadMore" class="load-more-btn" onclick="loadMore()">Load More</button>
 
-      fetch('/api/mark-notification-seen', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          notification_id: parseInt(notificationId, 10)
-        }),
-        credentials: 'include'  // Add this to ensure cookies are sent
-      })
-      .then(async response => {
-        if (!response.ok) {
-          const text = await response.text();
-          console.error('Server response:', text);
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        try {
-          return response.json();
-        } catch (e) {
-          console.error('JSON parse error:', e);
-          throw e;
-        }
-      })
-      .then(data => {
-        if (data.success) {
-          // Find the notification row
-          const row = document.querySelector(`tr[data-notification-id="${notificationId}"]`);
-          if (row) {
-            // Create the "Seen" text
-            const seenText = document.createElement('h5');
-            seenText.className = 'seen-text';
-            seenText.textContent = 'Seen';
-            
-            // Replace the button with the "Seen" text
-            const actionCell = row.querySelector('td:last-child');
-            if (actionCell) {
-              actionCell.innerHTML = '';
-              actionCell.appendChild(seenText);
-            }
-          }
-        } else {
-          // If there was an error, re-enable the button
-          if (button) {
-            button.disabled = false;
-          }
-          console.error('Failed to mark notification as seen');
-        }
-      })
-      .catch(error => {
-        // If there was an error, re-enable the button
-        if (button) {
-          button.disabled = false;
-        }
-        console.error('Error:', error);
-        alert('Failed to mark notification as seen. Please try again.');
-      });
-    }
-  </script>
-
-  <button onclick="location.href='/'">Back Main</button>
+  <button onclick="location.href='/'" class="load-more-btn">Homepage</button>
 </div>
+
+<script>
+  // Pagination functionality for notifications
+  const rows = document.querySelectorAll(".notification-row");
+  const rowsPerPage = 15;
+  let currentPage = 1;
+
+  // Initially hide all rows except the first page
+  rows.forEach((row, index) => {
+    if (index >= rowsPerPage) {
+      row.style.display = "none";
+    }
+  });
+
+  function loadMore() {
+    const startIndex = currentPage * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+
+    rows.forEach((row, index) => {
+      if (index >= startIndex && index < endIndex) {
+        row.style.display = "table-row";
+      }
+    });
+
+    currentPage++;
+
+    // Hide the Load More button if no more rows to display
+    if (currentPage * rowsPerPage >= rows.length) {
+      document.getElementById("loadMore").style.display = "none";
+    }
+  }
+
+  function markAsSeen(notificationId) {
+    console.log('Marking notification as seen:', notificationId);
+
+    const button = document.querySelector(`tr[data-notification-id="${notificationId}"] .seen-btn`);
+    if (button) {
+      button.disabled = true;
+    }
+
+    fetch('/api/mark-notification-seen', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        notification_id: parseInt(notificationId, 10)
+      }),
+      credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const row = document.querySelector(`tr[data-notification-id="${notificationId}"]`);
+        if (row) {
+          const actionCell = row.querySelector('td:last-child');
+          if (actionCell) {
+            actionCell.innerHTML = '<h5 class="seen-text">Seen</h5>';
+          }
+        }
+      } else {
+        if (button) button.disabled = false;
+        console.error('Failed to mark notification as seen');
+      }
+    })
+    .catch(error => {
+      if (button) button.disabled = false;
+      console.error('Error:', error);
+    });
+  }
+</script>
+
 </body>
 </html>

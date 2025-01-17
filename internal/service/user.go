@@ -174,7 +174,7 @@ func (userObj *UserServiceImpl) ExtendSessionTimeout(token string) (time.Time, e
 		fmt.Println("ExtendSessionTimeout: Problem with getting session")
 		return time.Time{}, err
 	}
-	session.ExpTime = session.ExpTime.Add(1 * time.Minute)
+	session.ExpTime = session.ExpTime.Add(5 * time.Minute)
 	if err = userObj.repo.UpdateSession(session); err != nil {
 		fmt.Println("ExtendSessionTimeout: Problem with update session")
 
@@ -212,7 +212,7 @@ func (userObj *UserServiceImpl) GoogleAuthorization(googleUser *models.GoogleLog
 	session := &models.Session{
 		UserID:  user.UserUserID,
 		Token:   uuid.New().String(),
-		ExpTime: time.Now().Add(10 * time.Minute),
+		ExpTime: time.Now().Add(20 * time.Minute),
 	}
 	if err := userObj.repo.DeleteSessionByUserID(user.UserUserID); err != nil {
 		return nil, errors.New("Error deleting the Session by USER ID")

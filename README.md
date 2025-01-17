@@ -79,6 +79,6 @@ dabduali & ssainova & aospanova
 
 - Fix Notifications
 - Flash errors
-- longer session
 - buttons are different styles it is driving me nuts
 - admin log in
+- commented posts tab

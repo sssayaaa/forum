@@ -1,106 +1,241 @@
 <!DOCTYPE html>
 <html>
-    <style>
-        /* Frame styling */
-        .frame {
-            border: 1px solid rgb(249, 249, 249);
-            border-radius: 5px;
-            padding: 15px;
-            margin: 20px;
-        }
-
-        /* Post styling */
-        .post {
-            border: 1px solid #b21414;
-            border-radius: 1px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-
-        /* Heading within the post */
-        .post .title {
-            border-bottom: 1px solid rgb(16, 15, 15);
-            padding-bottom: 10px;
-            margin-bottom: 10px;
-        }
-
-        /* Meta information style */
-        .post .meta {
-            font-size: 10px;
-            color: #777;
-        }
-
-        /* Entry content style */
-        .post .entry {
-            margin-bottom: 10px;
-        }
-
-        /* Comment styling */
-        .comment {
-            
-            border: 1px solid rgb(23, 22, 22);
-            border-radius: 5px;
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-
-        /* Styling for meta information within comments */
-        .comment .meta {
-            font-size: 10px;
-            color: #777;
-        }
-
-        /* Style for likes and dislikes within comments */
-        .comment p span {
-            margin-right: 10px;
-        }
-        .post p span {
-            margin-right: 5px;
-            padding: 5px;
-            background-color: #f5f5f5;
-            color: #777;
-        }
-        .post-image {
-        margin: 15px 0;
-        text-align: center;
-        }
-
-        .post-image img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 5px;
-        }
-
-    </style>
     <head>
-        <title>Comments</title>
+        <title>Comments | My Forum</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Rubik+Puddles&display=swap" rel="stylesheet">
+        <style>
+            body {
+                margin: 0;
+                font-family: 'Times New Roman', Times, serif;
+            }
+
+            .header-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 20px;
+                background-color: hotpink;
+            }
+
+            .header-container h1 {
+                color: white;
+                margin: 0;
+                font-size: 36px;
+                font-family: "Rubik Puddles", serif;
+            }
+
+            .greeting {
+                color: white;
+                font-size: 18px;
+                text-align: right;
+            }
+
+            button, input[type="submit"], .back-button {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 12px;
+                font-size: 14px;
+                cursor: pointer;
+                font-family: 'Times New Roman', Times, serif;
+                transition: background-color 0.3s ease, color 0.3s ease;
+            }
+
+            .back-button {
+                background-color: white;
+                color: hotpink;
+                margin-bottom: 15px;
+                text-decoration: none;
+                display: inline-block;
+                text-align: center;
+            }
+
+            .back-button:hover {
+                background-color: rgb(255, 55, 132);
+                color: white;
+            }
+
+            
+
+            /* Container styling */
+    .frame {
+      border: 1px solid rgb(249, 249, 249);
+      border-radius: 5px;
+      padding: 15px;
+      margin: 20px;
+    }
+
+    /* Post styling */
+    .post {
+      border: 1px solid #b21414;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 20px;
+      background-color: #fff9f9;
+    }
+
+    .post .title {
+      border-bottom: 2px solid rgb(16, 15, 15);
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .post .meta {
+      font-size: 12px;
+      color: #777;
+    }
+
+    .post .entry {
+      margin-top: 10px;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    /* Comment styling */
+    .comment {
+      border: 1px solid rgb(200, 200, 200);
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background-color: #f9f9f9;
+    }
+
+    .comment .meta {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 10px;
+    }
+
+    .comment .entry {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    /* Primary button styles (e.g., add comment, submit) */
+button, input[type="submit"] {
+  background-color: hotpink;
+  color: white;
+}
+
+button:hover, input[type="submit"]:hover {
+  background-color: rgb(255, 55, 132);
+  color: white;
+}
+
+/* Like and Dislike buttons */
+.like-btn, .dislike-btn {
+  width: 100px;
+  padding: 10px;
+  margin-right: 10px;
+  background-color: #fff;
+  color: black;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.like-btn:hover, .dislike-btn:hover {
+  background-color: #f2f2f2;
+  color: hotpink;
+  border-color: hotpink;
+}
+
+/* Delete and edit buttons */
+button[type="submit"], .edit-btn, .delete-btn {
+  background-color: #f5f5f5;
+  color: hotpink;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+button[type="submit"]:hover, .edit-btn:hover, .delete-btn:hover {
+  background-color: hotpink;
+  color: white;
+  border-color: hotpink;
+}
+
+/* Add comment button */
+.add-comment-btn {
+  display: block;
+  background-color: hotpink;
+  color: white;
+  border-radius: 12px;
+  padding: 10px 15px;
+  font-size: 14px;
+  text-align: center;
+  width: 150px;
+  margin: 20px auto;
+}
+
+.add-comment-btn:hover {
+  background-color: rgb(255, 55, 132);
+  color: white;
+}
+
+/* Textarea for adding comments */
+textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  font-family: 'Times New Roman', Times, serif;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease;
+}
+
+textarea:focus {
+  border-color: hotpink;
+  outline: none;
+}
+
+    /* Hidden comment form */
+    #commentForm {
+      display: none;
+      margin-top: 20px;
+    }
+
+    
+        </style>
     </head>
     <body>
-        <div align="center">
-            {{if .LoggedIn}}
-            <button onclick="location.href='/'">Back Main</button><br>
-            <form action="/submit-comment" method="post">
-                <label for="commentcontent">Write your Comtent Content:</label><br>
-                <textarea id="commentcontent" name="commentcontent" rows="4" cols="50"></textarea><br>
-                <input type="hidden" name="postId" value="{{.ThePost.PostID}}">
-                <input type="submit" value="Submit">
-            </form>
-            <div class="frame">
-                <div class = "content">
-                    <div class = "post">
-                        <h1 class = "title">{{.ThePost.Title}}</h1>
-                        <p class="meta"><span class="date">Posted at: {{.ThePost.CreatedTimeString}}</span><br><span class="postedby">Posted by: {{.ThePost.Username}}</span></p>
+        <div class="header-container">
+            <h1>My Forum</h1>
+            <div class="greeting">
+              <h2>Comments</h2>
+            </div>
+        </div>
 
-                        <div class = "entry">
-                            <h2>{{.ThePost.Content}}</h2>
-                            {{if .ThePost.ImagePath}}
-                            <div class="post-image">
-                                <img src="{{.ThePost.ImagePath}}" alt="Post image" style="max-width: 100%; height: auto;">
-                            </div>
-                            {{end}}
-                        </div>
-                    </div>    
-                        {{$postID:=.ThePost.PostID}}
+        <a href="/" class="back-button">Homepage</a>
+
+        <div class="frame">
+            <div class="post">
+                <h1 class="title">{{.ThePost.Title}}</h1>
+                <p class="meta">
+                    <span class="date">Posted at: {{.ThePost.CreatedTimeString}}</span><br>
+                    <span class="postedby">Posted by: {{.ThePost.Username}}</span>
+                  </p>
+                  <div class="entry">
+                    <p>{{.ThePost.Content}}</p>
+                    {{if .ThePost.ImagePath}}
+                    <div class="post-image">
+                      <img src="{{.ThePost.ImagePath}}" alt="Post image">
+                    </div>
+                    {{end}}
+                  </div>
+            </div>
+
+
+            {{if .LoggedIn}}
+                {{if .AllComments}}
+                <div>
+                    {{$postID:=.ThePost.PostID}}
                         {{$userID:=.User.UserUserID}}
                         {{range .AllComments}}
                         {{if or (.IsApproved) (eq .UserRole "moderator") (eq .UserRole "admin") (eq .UserID $userID)}}
@@ -195,59 +330,62 @@
                         </div>
                         {{end}}
                         {{end}}
+                </div>
+                {{else}}
+                <p>No comments yet</p>
+                {{end}}
+            {{else}}
+                {{if .AllComments}}
+                <div>
+                    {{range .AllComments}}
+                    {{if .IsApproved}}
+                    <div class="comment">
+                    <p class="meta">
+                        <span class="date">Posted at: {{.CreatedTimeString}}</span><br>
+                        <span class="postedby">Commented by: {{.Username}}</span>
+                    </p>
+                    <div class="entry">
+                        <p>{{.Content}}</p>
+                    </div>
+                    <p>
+                        <span>👍 {{.LikesCounter}}</span> 
+                        <span>👎 {{.DislikeCounter}}</span>
+                    </p>
+                    </div>
+                    {{end}}
+                    {{end}}
+                </div>
+                {{else}}
+                <p>No comments yet</p>
+                {{end}}
+            {{end}}    
 
-                    
-                </div>    
+
+            {{if .LoggedIn}}
+            <button class="add-comment-btn" onclick="toggleCommentForm()">Add Comment</button>
+
+            <script>
+                // Show the comment form when "Add Comment" button is clicked
+                function toggleCommentForm() {
+                  const form = document.getElementById("commentForm");
+                  form.style.display = form.style.display === "none" ? "block" : "none";
+                }
+              </script>
+
+            <!-- Hidden Comment Form -->
+            <div id="commentForm">
+                <form action="/submit-comment" method="post">
+                <textarea id="commentcontent" name="commentcontent" rows="4" placeholder="Write your comment here..." required></textarea>
+                <input type="hidden" name="postId" value="{{.ThePost.PostID}}">
+                <input type="submit" value="Submit">
+                </form>
             </div>
             {{else}}
-            <button onclick="location.href='/'">Back Main</button><br>
-            
-            <div class="frame">
-                <div class="content">
-                    <div class="post">
-                        <h1 class="title">{{.ThePost.Title}}</h1>
-                        <p class="meta">
-                            <span class="date">Posted at: {{.ThePost.CreatedTimeString}}</span>
-                            <span class="postedby">Posted by: {{.ThePost.Username}}</span>
-                        </p>
-            
-                        <div class="entry">
-                            <h2>{{.ThePost.Content}}</h2>
-                            <!-- {{if ne .ThePost.ImagePath ""}}
-                                <div class="post-image">
-                                    <p>Attempting to display image from: {{.ThePost.ImagePath}}</p>
-                                    <img src="/{{.ThePost.ImagePath}}" alt="Post image" style="max-width: 100%; height: auto;">
-                                </div>
-                            {{else}} -->
-                                <!-- <p>No image path available</p>
-                            {{end}} -->
-                            {{if ne .ThePost.ImagePath ""}}
-                                <p>Debug - Trying to load image from: {{.ThePost.ImagePath}}</p>
-                                <img src="{{.ThePost.ImagePath}}" alt="Image Description" width="300">
-                                {{end}}
-                        </div>
-                        
-                    </div>
-                        {{range .AllComments}}
-                        {{if .IsApproved}}
-                        <div class="comment">
-                            <div class="entry">
-                                <p class="meta">
-                                    <span class="date">Posted at: {{.CreatedTimeString}}</span>
-                                    <span class="postedby">Commented by: {{.Username}}</span>
-                                </p>
-                                <pre>{{.Content}}</pre>
-                            </div>
-                            <p><span>👍 {{.LikesCounter}}</span> <span>👎 {{.DislikeCounter}}</span></p>
-                        </div>
-                        {{end}}
-                        {{end}}
-                   
-                </div>
-            </div>
-            
+            <p>Please log in to add a comment.</p>
             {{end}}
-        <div>
+        </div>
+
+
 
 
     </body>

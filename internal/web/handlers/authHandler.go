@@ -63,20 +63,16 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		email := r.FormValue("email")
 		password := r.FormValue("password")
 		admin := r.FormValue("admin") == "on"
-		// check users credentials and handle the admin level
-		// if admin {
-		// } else {
-		// fmt.Println("ADMING BEFORE: ", admin)
+
 		session, err := h.service.UserServiceInterface.Login(email, password, admin)
 		if err != nil {
 			helpers.ErrorHandler(w, http.StatusForbidden, err)
 			return
-		} // else {
+		} 
 
 		helpers.SessionCookieSet(w, session.Token, session.ExpTime)
-		// fmt.Println("ADMING AFTER: ", admin)
+
 		if admin {
-			// fmt.Println("ADMIN LOGINNING")
 			http.Redirect(w, r, "/admin_page", http.StatusSeeOther)
 			return
 		} else {
@@ -84,8 +80,7 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//}
-		// }
+
 
 	default:
 		helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("Error in Login Handler"))

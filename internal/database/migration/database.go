@@ -34,7 +34,7 @@ func CreateAllTables(ctx context.Context, db *sql.DB) error {
 		}
 	}()
 
-	// create user table
+	// Create users table
 	if _, err = trans.ExecContext(ctx, `
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +49,7 @@ func CreateAllTables(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 
-	// create session table
+	// Create sessions table
 	if _, err = trans.ExecContext(ctx, `
         CREATE TABLE IF NOT EXISTS sessions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,7 +62,7 @@ func CreateAllTables(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 
-	// create post table
+	// Create posts table
 	if _, err = trans.ExecContext(ctx, `
 		CREATE TABLE IF NOT EXISTS posts (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -82,7 +82,7 @@ func CreateAllTables(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 
-	// create post_category table
+	// Create post_category table
 	if _, err = trans.ExecContext(ctx, `
 		CREATE TABLE IF NOT EXISTS post_category(
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,23 +94,17 @@ func CreateAllTables(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 
-	// create post_votes table
+	// Create categories table
 	if _, err = trans.ExecContext(ctx, `
-		CREATE TABLE IF NOT EXISTS post_votes(
-    post_votes_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    post_id INTEGER,
-    user_id INTEGER,
-    reaction INTEGER,
-    is_seen BOOLEAN DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id) REFERENCES posts (id),
-    FOREIGN KEY (user_id) REFERENCES users (id)
-)
+		CREATE TABLE IF NOT EXISTS categories(
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			category_name TEXT
+		)
 	`); err != nil {
 		return err
 	}
 
-	// create comments table
+	// Create comments table
 	if _, err = trans.ExecContext(ctx, `
 		CREATE TABLE IF NOT EXISTS comments (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -129,7 +123,27 @@ func CreateAllTables(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 
-	// create comment_votes table
+	// Drop and recreate post_votes table with unique constraint
+	if _, err = trans.ExecContext(ctx, `DROP TABLE IF EXISTS post_votes`); err != nil {
+		return err
+	}
+	if _, err = trans.ExecContext(ctx, `
+		CREATE TABLE IF NOT EXISTS post_votes(
+			post_votes_id INTEGER PRIMARY KEY AUTOINCREMENT,
+			post_id INTEGER,
+			user_id INTEGER,
+			reaction INTEGER,
+			is_seen BOOLEAN DEFAULT 0,
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			FOREIGN KEY (post_id) REFERENCES posts (id),
+			FOREIGN KEY (user_id) REFERENCES users (id),
+			UNIQUE(post_id, user_id)
+		)
+	`); err != nil {
+		return err
+	}
+
+	// Create comment_votes table
 	if _, err = trans.ExecContext(ctx, `
 		CREATE TABLE IF NOT EXISTS comment_votes(
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -143,15 +157,5 @@ func CreateAllTables(ctx context.Context, db *sql.DB) error {
 		return err
 	}
 
-	// create categories table
-	if _, err = trans.ExecContext(ctx, `
-		CREATE TABLE IF NOT EXISTS categories(
-			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			category_name TEXT
-		)
-	`); err != nil {
-		return err
-	}
-
-	return nil // Return nil if no errors occurred
+	return nil
 }

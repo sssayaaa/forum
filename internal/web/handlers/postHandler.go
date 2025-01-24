@@ -703,101 +703,51 @@ func (h *Handler) ShowMyCommentsWithPostsHandler(w http.ResponseWriter, r *http.
 }
 
 func (h *Handler) ShowMyNotificationsHandler(w http.ResponseWriter, r *http.Request) {
-	path := "internal/web/templates/notifications.html"
-	switch r.Method {
-	case "GET":
-		type templateData struct {
-			Notifications []*models.PostVotes
-		}
-
-		userID := r.FormValue("quserID")
-		intuserID, err := strconv.Atoi(userID)
-		if err != nil {
-			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		// Get reaction notifications with debug logging
-		postVotes, err := h.service.PostServiceInterface.GetAllMyPostsLikedByOtherUsers(intuserID)
-		if err != nil {
-			log.Printf("Error getting reaction notifications: %v", err)
-			postVotes = []*models.PostVotes{}
-		}
-		log.Printf("Fetched %d reaction notifications", len(postVotes))
-		for _, pv := range postVotes {
-			log.Printf("Reaction notification: ID=%d, PostID=%d, UserID=%d, Time=%v",
-				pv.PostVotesID, pv.PostID, pv.UserID, pv.Time)
-		}
-
-		// Get comment notifications with debug logging
-		postVotes2, err := h.service.PostServiceInterface.GetAllMyPostsCommentedByOtherUsers(intuserID)
-		if err != nil {
-			log.Printf("Error getting comment notifications: %v", err)
-			postVotes2 = []*models.PostVotes{}
-		}
-		log.Printf("Fetched %d comment notifications", len(postVotes2))
-		for _, pv := range postVotes2 {
-			log.Printf("Comment notification: ID=%d, PostID=%d, UserID=%d, Time=%v",
-				pv.PostVotesID, pv.PostID, pv.UserID, pv.Time)
-		}
-
-		// Process notifications (keep your existing processing code)
-		for _, postVote := range postVotes {
-			if postVote.Reaction == 1 {
-				postVote.ReactionStr = "liked"
-			} else if postVote.Reaction == -1 {
-				postVote.ReactionStr = "disliked"
-			}
-			reactor, err := h.service.UserServiceInterface.GetUserByUserID(postVote.UserID)
-			if err != nil {
-				continue
-			}
-			postVote.ReactorUsername = reactor.Username
-			post, err := h.service.PostServiceInterface.GetPostByID(postVote.PostID)
-			if err != nil {
-				continue
-			}
-			postVote.PostTitle = post.Title
-		}
-
-		for _, postVote := range postVotes2 {
-			reactor, err := h.service.UserServiceInterface.GetUserByUserID(postVote.UserID)
-			if err != nil {
-				continue
-			}
-			postVote.ReactorUsername = reactor.Username
-			post, err := h.service.PostServiceInterface.GetPostByID(postVote.PostID)
-			if err != nil {
-				continue
-			}
-			postVote.PostTitle = post.Title
-		}
-
-		// Combine and sort notifications
-		allNotifications := append([]*models.PostVotes{}, postVotes...)
-		allNotifications = append(allNotifications, postVotes2...)
-
-		// Sort by time in descending order (newest first)
-		sort.Slice(allNotifications, func(i, j int) bool {
-			return allNotifications[i].Time.After(allNotifications[j].Time)
-		})
-
-		log.Printf("Total notifications after combining: %d", len(allNotifications))
-		for _, n := range allNotifications {
-			log.Printf("Combined notification: Time=%v, Type=%s, PostTitle=%s",
-				n.Time, n.ReactionStr, n.PostTitle)
-		}
-
-		data := templateData{
-			Notifications: allNotifications,
-		}
-
-		helpers.RenderTemplate(w, path, data)
-		return
-	default:
-		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("Error in Notification Handler"))
+	userID := r.FormValue("quserID")
+	intuserID, err := strconv.Atoi(userID)
+	if err != nil {
+		helpers.ErrorHandler(w, http.StatusBadRequest, err)
 		return
 	}
+
+	// Get both reactions and comments
+	reactions, err := h.service.PostServiceInterface.GetAllMyPostsLikedByOtherUsers(intuserID)
+	if err != nil {
+		log.Printf("Error getting reactions: %v", err)
+		reactions = []*models.PostVotes{}
+	}
+
+	// Process reactions
+	for _, pv := range reactions {
+		if pv.Reaction == 1 {
+			pv.ReactionStr = "liked"
+		} else if pv.Reaction == -1 {
+			pv.ReactionStr = "disliked"
+		}
+	}
+
+	comments, err := h.service.PostServiceInterface.GetAllMyPostsCommentedByOtherUsers(intuserID)
+	if err != nil {
+		log.Printf("Error getting comments: %v", err)
+		comments = []*models.PostVotes{}
+	}
+
+	// Combine and sort notifications
+	allNotifications := append([]*models.PostVotes{}, reactions...)
+	allNotifications = append(allNotifications, comments...)
+
+	sort.Slice(allNotifications, func(i, j int) bool {
+		return allNotifications[i].Time.After(allNotifications[j].Time)
+	})
+
+	data := struct {
+		Notifications []*models.PostVotes
+	}{
+		Notifications: allNotifications,
+	}
+
+	path := "internal/web/templates/notifications.html"
+	helpers.RenderTemplate(w, path, data)
 }
 
 func (h *Handler) MarkNotificationSeenHandler(w http.ResponseWriter, r *http.Request) {

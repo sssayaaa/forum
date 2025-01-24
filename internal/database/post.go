@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"forum/internal/models"
 	"log"
-	"strings"
 	"time"
 )
 
@@ -113,7 +112,9 @@ func (postObj *PostRepoImpl) GetReaction(postID, userID int) (int, error) {
 
 func (postObj *PostRepoImpl) AddReactionToPostVotes(postID, userID, reaction int) error {
 	_, err := postObj.db.Exec(`
-		INSERT INTO post_votes (post_id, user_id,reaction, created_at, is_seen) VALUES (?, ?, ?);`,
+		INSERT INTO post_votes (post_id, user_id, reaction, created_at, is_seen) 
+		VALUES (?, ?, ?, CURRENT_TIMESTAMP, 0);
+		ON CONFLICT (post_id, user_id) DO NOTHING`,
 		postID, userID, reaction)
 	if err != nil {
 		return err
@@ -357,20 +358,23 @@ func (postObj *PostRepoImpl) GetMyReactedPosts(userID int) (map[int]int, error) 
 
 	return postToReaction, nil
 }
-
 func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*models.PostVotes, error) {
 	var PostVotes []*models.PostVotes
 	rows, err := postObj.db.Query(`
-        SELECT pv.id,
-               pv.post_id,
-               pv.user_id,
-               pv.reaction,
-               COALESCE(pv.is_seen, 0) as is_seen,
-               pv.created_at as time
+        SELECT 
+            pv.id,
+            pv.post_id,
+            pv.user_id,
+            pv.reaction,
+            COALESCE(pv.is_seen, 0) as is_seen,
+            pv.created_at as time,
+            u.usernames as reactor_username,
+            p.title as post_title
         FROM post_votes pv
         JOIN posts p ON p.id = pv.post_id
-        WHERE p.user_id = ?  -- You are the post owner
-        ORDER BY pv.created_at DESC`, userID) // Removed the pv.user_id != ? condition
+        JOIN users u ON u.id = pv.user_id
+        WHERE p.user_id = ?  
+        ORDER BY pv.created_at DESC`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -386,36 +390,24 @@ func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*mode
 			&PostVote.Reaction,
 			&PostVote.IsSeen,
 			&timeStr,
+			&PostVote.ReactorUsername,
+			&PostVote.PostTitle,
 		)
 		if err != nil {
 			return nil, err
 		}
 
 		if timeStr.Valid {
-			// Try parsing with multiple formats
-			formats := []string{
-				"2006-01-02 15:04:05",
-				"2006-01-02 15:04:05.999999999-07:00",
-				"2006-01-02 15:04:05.999999999+07:00",
-			}
-
-			var parsedTime time.Time
-			var parseErr error
-			for _, format := range formats {
-				parsedTime, parseErr = time.Parse(format, timeStr.String)
-				if parseErr == nil {
-					break
-				}
-			}
-			if parseErr != nil {
-				log.Printf("Failed to parse time %s: %v", timeStr.String, parseErr)
-				PostVote.Time = time.Now()
-			} else {
+			parsedTime, err := time.Parse("2006-01-02 15:04:05", timeStr.String)
+			if err == nil {
 				PostVote.Time = parsedTime
+			} else {
+				PostVote.Time = time.Now()
 			}
 		} else {
 			PostVote.Time = time.Now()
 		}
+
 		PostVotes = append(PostVotes, &PostVote)
 	}
 	return PostVotes, nil
@@ -485,46 +477,49 @@ func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*
 }
 
 func (postObj *PostRepoImpl) CountUnseenNotifications(userID int) (int, error) {
-	var count int
 	query := `
         SELECT COUNT(*) FROM (
-            SELECT id FROM post_votes 
-            WHERE user_id = ? AND is_seen = 0
+            SELECT id FROM post_votes pv
+            JOIN posts p ON p.id = pv.post_id
+            WHERE p.user_id = ? AND pv.user_id != ? AND pv.is_seen = 0
             UNION ALL
-            SELECT id FROM comments 
-            WHERE user_id = ? AND is_seen = 0
-        )
+            SELECT id FROM comments c
+            JOIN posts p ON p.id = c.post_id
+            WHERE p.user_id = ? AND c.user_id != ? AND c.is_seen = 0
+        ) notifications
     `
-	err := postObj.db.QueryRow(query, userID, userID).Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
+	var count int
+	err := postObj.db.QueryRow(query, userID, userID, userID, userID).Scan(&count)
+	return count, err
 }
 
 func (postObj *PostRepoImpl) MarkNotificationAsSeen(notificationID int) error {
-	maxRetries := 3
-	var err error
-
-	for i := 0; i < maxRetries; i++ {
-		query := `
-            UPDATE post_votes 
-            SET is_seen = 1 
-            WHERE id = ?
-        `
-		_, err = postObj.db.Exec(query, notificationID)
-		if err == nil {
-			return nil
-		}
-
-		if strings.Contains(err.Error(), "database is locked") {
-			log.Printf("Database locked, attempt %d of %d, waiting before retry...", i+1, maxRetries)
-			time.Sleep(100 * time.Millisecond)
-			continue
-		}
-
-		return err // If it's not a locking error, return immediately
+	// Try post_votes first
+	result, err := postObj.db.Exec(`
+        UPDATE post_votes 
+        SET is_seen = 1 
+        WHERE id = ?
+    `, notificationID)
+	if err != nil {
+		return err
 	}
 
-	return err
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	// If no rows affected in post_votes, try comments
+	if rows == 0 {
+		_, err = postObj.db.Exec(`
+            UPDATE comments
+            SET is_seen = 1
+            WHERE id = ?
+        `, notificationID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

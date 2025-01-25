@@ -146,7 +146,7 @@ func (postObj *PostRepoImpl) GetPostByID(postID int) (*models.Post, error) {
 		postID).Scan(&post.PostID, &post.UserID, &post.Title, &post.Content, &post.CreatedTime, &post.LikesCounter, &post.DislikeCounter, &post.ImagePath); err != nil {
 		return nil, err
 	}
-	fmt.Println("Retrieved post.ImagePath:", post.ImagePath)
+	// fmt.Println("Retrieved post.ImagePath:", post.ImagePath)
 	return post, nil
 }
 

@@ -138,7 +138,12 @@
           {{else}}
             commented
           {{end}}
-          by user {{.ReactorUsername}}
+          by user 
+          {{if .ReactionStr}}
+            {{.ReactorUsername}}
+          {{else}}
+          {{.ReactorUsername}}
+          {{end}}
         </td>
       </tr>
       {{end}}

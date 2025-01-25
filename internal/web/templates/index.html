@@ -310,18 +310,21 @@ nav li a:hover {
             </ul>
         </nav>
         <div class="create-post-form" id="create-post-form">
-            <form action="/submit-post" enctype="multipart/form-data" method="post">
+            <form id="postForm" action="/submit-post" enctype="multipart/form-data" method="post" onsubmit="return validateForm()">
                 <h2>Create a new post</h2>
                 <p>Choose at least one category:</p>
                 {{range .AllCategories}}
                 <label><input type="checkbox" name="preference" value="{{.}}"> {{.}} </label>
                 {{end}}
                 <br><br>
+        
                 <label for="posttitle">Write your Post Title:</label><br>
-                <textarea id name="posttitle" rows="2" cols="50"></textarea><br>
+                <textarea id="posttitle" name="posttitle" rows="2" cols="50"></textarea><br>
                 <p class="fine-print">*Minimum 2, maximum 50 characters</p>
+        
                 <label for="postcontent">Write your Post Content:</label><br>
                 <textarea id="postcontent" name="postcontent" rows="4" cols="50"></textarea><br>
+        
                 <input type="file" name="files" multiple>
                 <input type="submit" value="Submit">
                 <p class="fine-print">*You can attach only one file</p>
@@ -334,6 +337,33 @@ nav li a:hover {
                 const form = document.getElementById('create-post-form');
                 form.style.display = form.style.display === 'none' || form.style.display === '' ? 'block' : 'none';
             });
+
+            function validateForm() {
+            const minTitleLength = 2;
+            const maxTitleLength = 50;
+            const minContentLength = 5;
+
+            let title = document.getElementById("posttitle").value.trim();
+            let content = document.getElementById("postcontent").value.trim();
+            let categories = document.querySelectorAll('input[name="preference"]:checked');
+
+            if (categories.length === 0) {
+                alert("You must choose at least one category.");
+                return false;
+            }
+
+            if (title.length < minTitleLength || title.length > maxTitleLength) {
+                alert("Title must be between 2 and 50 characters.");
+                return false;
+            }
+
+            if (content.length < minContentLength) {
+                alert("Content must be at least 5 characters long.");
+                return false;
+            }
+
+            return true;  // Form will submit if all validations pass
+        }
         </script>
 
         <br>

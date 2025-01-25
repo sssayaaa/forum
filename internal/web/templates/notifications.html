@@ -125,9 +125,7 @@
   <table id="notificationsTable">
     <thead>
       <tr>
-        <th>Notifications</th>
-        <th>Time</th>
-        <th>Action</th>
+        <th> </th>
       </tr>
     </thead>
     <tbody>
@@ -142,95 +140,14 @@
           {{end}}
           by user {{.ReactorUsername}}
         </td>
-        <td class="timestamp">{{.Time.Format "2006/01/02 15:04:05"}}</td>
-        <td>
-          {{if not .IsSeen}}
-          <button class="seen-btn" onclick="markAsSeen('{{.PostVotesID}}')">Mark as seen</button>
-          {{else}}
-          <h5 class="seen-text">Seen</h5>
-          {{end}}
-        </td>
       </tr>
       {{end}}
     </tbody>
   </table>
 
-  <!-- Load More Button -->
-  <button id="loadMore" class="load-more-btn" onclick="loadMore()">Load More</button>
-
   <button onclick="location.href='/'" class="load-more-btn">Homepage</button>
 </div>
 
-<script>
-  // Pagination functionality for notifications
-  const rows = document.querySelectorAll(".notification-row");
-  const rowsPerPage = 15;
-  let currentPage = 1;
-
-  // Initially hide all rows except the first page
-  rows.forEach((row, index) => {
-    if (index >= rowsPerPage) {
-      row.style.display = "none";
-    }
-  });
-
-  function loadMore() {
-    const startIndex = currentPage * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-
-    rows.forEach((row, index) => {
-      if (index >= startIndex && index < endIndex) {
-        row.style.display = "table-row";
-      }
-    });
-
-    currentPage++;
-
-    // Hide the Load More button if no more rows to display
-    if (currentPage * rowsPerPage >= rows.length) {
-      document.getElementById("loadMore").style.display = "none";
-    }
-  }
-
-  function markAsSeen(notificationId) {
-    console.log('Marking notification as seen:', notificationId);
-
-    const button = document.querySelector(`tr[data-notification-id="${notificationId}"] .seen-btn`);
-    if (button) {
-      button.disabled = true;
-    }
-
-    fetch('/api/mark-notification-seen', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        notification_id: parseInt(notificationId, 10)
-      }),
-      credentials: 'include'
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        const row = document.querySelector(`tr[data-notification-id="${notificationId}"]`);
-        if (row) {
-          const actionCell = row.querySelector('td:last-child');
-          if (actionCell) {
-            actionCell.innerHTML = '<h5 class="seen-text">Seen</h5>';
-          }
-        }
-      } else {
-        if (button) button.disabled = false;
-        console.error('Failed to mark notification as seen');
-      }
-    })
-    .catch(error => {
-      if (button) button.disabled = false;
-      console.error('Error:', error);
-    });
-  }
-</script>
 
 </body>
 </html>

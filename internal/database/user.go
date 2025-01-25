@@ -75,10 +75,18 @@ func (userObj *UserRepoImpl) CreateSession(session *models.Session) error {
 }
 
 func (userObj *UserRepoImpl) UpdateSession(session *models.Session) error {
-	if _, err := userObj.db.Exec(
+	result, err := userObj.db.Exec(
 		`UPDATE sessions SET token = ?, exp_time = ? WHERE user_id = ?`,
-		session.Token, session.ExpTime, session.UserID); err != nil {
+		session.Token, session.ExpTime, session.UserID)
+	if err != nil {
 		return err
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return errors.New("no session found to update")
 	}
 	return nil
 }

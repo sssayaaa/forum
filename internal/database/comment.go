@@ -200,41 +200,53 @@ func (cmnt *CommentRepoImpl) GetMyReactedComments(userID int) (map[int]int, erro
 }
 
 func (cmnt *CommentRepoImpl) GetCommentByID(commentID int) (*models.Comment, error) {
-    comment := &models.Comment{}
+	comment := &models.Comment{}
 
-    if err := cmnt.db.QueryRow(`
+	if err := cmnt.db.QueryRow(`
         SELECT id, post_id, user_id, content, created_time, 
                likes_counter, dislikes_counter, is_approved, 
                reports, is_seen 
         FROM comments WHERE id = ?`,
-        commentID).Scan(
-        &comment.CommentID, &comment.PostID, &comment.UserID,
-        &comment.Content, &comment.CreatedTime, &comment.LikesCounter,
-        &comment.DislikeCounter, &comment.IsApproved, &comment.ReportStatus,
-        &comment.IsSeen); err != nil {
-        return nil, err
-    }
-    return comment, nil
+		commentID).Scan(
+		&comment.CommentID, &comment.PostID, &comment.UserID,
+		&comment.Content, &comment.CreatedTime, &comment.LikesCounter,
+		&comment.DislikeCounter, &comment.IsApproved, &comment.ReportStatus,
+		&comment.IsSeen); err != nil {
+		return nil, err
+	}
+	return comment, nil
 }
 
 func (cmnt *CommentRepoImpl) GetCommentByUserID(userID int) ([]*models.Comment, error) {
 	comments := []*models.Comment{}
 	rows, err := cmnt.db.Query(`
-	SELECT * FROM comments WHERE user_id = ? ORDER BY created_time DESC
-	`, userID)
+    SELECT id, post_id, user_id, content, created_time, likes_counter, 
+           dislikes_counter, is_approved, reports, is_seen
+    FROM comments WHERE user_id = ? ORDER BY created_time DESC
+    `, userID)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
+
 	for rows.Next() {
 		var comment models.Comment
-		err = rows.Scan(&comment.CommentID, &comment.PostID, &comment.UserID, &comment.Content, &comment.CreatedTime, &comment.LikesCounter, &comment.DislikeCounter, &comment.IsApproved, &comment.ReportStatus)
+		err = rows.Scan(
+			&comment.CommentID,
+			&comment.PostID,
+			&comment.UserID,
+			&comment.Content,
+			&comment.CreatedTime,
+			&comment.LikesCounter,
+			&comment.DislikeCounter,
+			&comment.IsApproved,
+			&comment.ReportStatus,
+			&comment.IsSeen,
+		)
 		if err != nil {
 			return nil, err
 		}
 		comments = append(comments, &comment)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
 	}
 	return comments, nil
 }

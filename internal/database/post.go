@@ -358,11 +358,12 @@ func (postObj *PostRepoImpl) GetMyReactedPosts(userID int) (map[int]int, error) 
 
 	return postToReaction, nil
 }
+
 func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*models.PostVotes, error) {
 	var PostVotes []*models.PostVotes
 	rows, err := postObj.db.Query(`
         SELECT 
-            pv.id,
+            pv.post_votes_id,
             pv.post_id,
             pv.user_id,
             pv.reaction,
@@ -394,15 +395,32 @@ func (postObj *PostRepoImpl) GetAllMyPostsLikedByOtherUsers(userID int) ([]*mode
 			&PostVote.PostTitle,
 		)
 		if err != nil {
+			log.Printf("Scan error: %v", err)
 			return nil, err
 		}
+		// log.Printf("Found post vote: ID=%d, PostID=%d, Reaction=%d",
+		// 	PostVote.PostVotesID, PostVote.PostID, PostVote.Reaction)
 
 		if timeStr.Valid {
-			parsedTime, err := time.Parse("2006-01-02 15:04:05", timeStr.String)
-			if err == nil {
-				PostVote.Time = parsedTime
-			} else {
+			formats := []string{
+				"2006-01-02 15:04:05",
+				"2006-01-02 15:04:05.999999999-07:00",
+				"2006-01-02 15:04:05.999999999+07:00",
+				"2006-01-02T15:04:05.999999999-07:00",
+				"2006-01-02T15:04:05.999999999+07:00",
+			}
+			var parsedTime time.Time
+			var parseErr error
+			for _, format := range formats {
+				parsedTime, parseErr = time.Parse(format, timeStr.String)
+				if parseErr == nil {
+					break
+				}
+			}
+			if parseErr != nil {
 				PostVote.Time = time.Now()
+			} else {
+				PostVote.Time = parsedTime
 			}
 		} else {
 			PostVote.Time = time.Now()
@@ -425,7 +443,7 @@ func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*
         FROM comments c
         JOIN posts p ON p.id = c.post_id
         WHERE p.user_id = ?  -- You are the post owner
-        ORDER BY c.created_time DESC`, userID) // Removed the c.user_id != ? condition
+        ORDER BY c.created_time DESC`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -447,13 +465,16 @@ func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*
 		}
 
 		if timeStr.Valid {
-			// Try parsing with multiple formats
 			formats := []string{
 				"2006-01-02 15:04:05",
 				"2006-01-02 15:04:05.999999999-07:00",
 				"2006-01-02 15:04:05.999999999+07:00",
+				"2006-01-02T15:04:05.999999999-07:00",
+				"2006-01-02T15:04:05.999999999+07:00",
+				"2006-01-02T15:04:05Z",
+				time.RFC3339,
+				time.RFC3339Nano,
 			}
-
 			var parsedTime time.Time
 			var parseErr error
 			for _, format := range formats {
@@ -463,7 +484,6 @@ func (postObj *PostRepoImpl) GetAllMyPostsCommentedByOtherUsers(userID int) ([]*
 				}
 			}
 			if parseErr != nil {
-				log.Printf("Failed to parse time %s: %v", timeStr.String, parseErr)
 				PostVote.Time = time.Now()
 			} else {
 				PostVote.Time = parsedTime

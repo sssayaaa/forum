@@ -673,23 +673,33 @@ func (h *Handler) ShowMyCommentsWithPostsHandler(w http.ResponseWriter, r *http.
 			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 			return
 		}
-		myCommentedPosts, err := h.service.CommentServiceInterface.GetCommentByUserID(intuserID)
-		for _, comment := range myCommentedPosts {
-			var commentWithPost models.CommentsWithPosts
+
+		// Get all comments by the user
+		comments, err := h.service.CommentServiceInterface.GetCommentByUserID(intuserID)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		// For each comment, get the associated post details
+		for _, comment := range comments {
 			post, err := h.service.PostServiceInterface.GetPostByID(comment.PostID)
 			if err != nil {
-				helpers.ErrorHandler(w, http.StatusInternalServerError, err)
-				return
+				continue // Skip if post not found or error
 			}
-			commentWithPost.PostID = post.PostID
-			commentWithPost.PostTitle = post.Title
-			commentWithPost.PostContent = post.Content
-			commentWithPost.PostTimeString = post.CreatedTime.Format("Jan 2, 2006 at 15:04")
-			commentWithPost.CommentID = comment.CommentID
-			commentWithPost.CommentContent = comment.Content
-			commentWithPost.CommentTimeString = comment.CreatedTime.Format("Jan 2, 2006 at 15:04")
-			MyCommentedPosts = append(MyCommentedPosts, &commentWithPost)
+
+			commentWithPost := &models.CommentsWithPosts{
+				PostID:            post.PostID,
+				PostTitle:         post.Title,
+				PostContent:       post.Content,
+				PostTimeString:    post.CreatedTime.Format("Jan 2, 2006 at 15:04"),
+				CommentID:         comment.CommentID,
+				CommentContent:    comment.Content,
+				CommentTimeString: comment.CreatedTime.Format("Jan 2, 2006 at 15:04"),
+			}
+			MyCommentedPosts = append(MyCommentedPosts, commentWithPost)
 		}
+
 		data := templateData{
 			MyCommentedPosts: MyCommentedPosts,
 			UserID:           intuserID,
@@ -697,7 +707,7 @@ func (h *Handler) ShowMyCommentsWithPostsHandler(w http.ResponseWriter, r *http.
 		helpers.RenderTemplate(w, path, data)
 		return
 	default:
-		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("Error in Moderator Request Handler"))
+		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("Error in Comment Handler"))
 		return
 	}
 }

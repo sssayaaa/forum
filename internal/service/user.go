@@ -198,6 +198,7 @@ func (userObj *UserServiceImpl) GoogleAuthorization(googleUser *models.GoogleLog
 			Username: googleUser.Email,
 			Email:    googleUser.Email,
 			Password: "dummypassword",
+			Role:     "user",
 		}
 		_, user.UserUserID, err = userObj.CreateUser(user)
 
@@ -237,6 +238,7 @@ func (userObj *UserServiceImpl) GitHubAuthorization(githubUser *models.GitHubLog
 			Username: githubUser.Login,
 			Email:    githubUser.Email,
 			Password: "dummypassword",
+			Role:     "user",
 		}
 		_, user.UserUserID, err = userObj.CreateUser(user)
 		if err != nil && err.Error() != errors.New("element with EMAIL not found").Error() {

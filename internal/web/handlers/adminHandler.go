@@ -10,23 +10,67 @@ import (
 
 func (h *Handler) AdminMainPageHandler(w http.ResponseWriter, r *http.Request) {
 	adminPagePath := "internal/web/templates/adminPage.html"
+
 	type templateData struct {
 		AllRequests []*models.User
 	}
 
 	switch r.Method {
 	case "GET":
+		// Retrieve session from cookie
+		cookie := helpers.SessionCookieGet(r)
+		if cookie == nil {
+			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("Unauthorized access. Please log in."))
+			return
+		}
+
+		// Get user session from the database
+		session, err := h.service.UserServiceInterface.GetSession(cookie.Value)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("Session expired or invalid. Please log in again."))
+			return
+		}
+
+		// Check if the user has admin role
+		user, err := h.service.UserServiceInterface.GetUserByUserID(session.UserID)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("User not found."))
+			return
+		}
+
+		if user.Role != "admin" {
+			helpers.ErrorHandler(w, http.StatusForbidden, errors.New("Access denied. Admins only."))
+			return
+		}
+
+		// Extend session timeout
+		expTime, err := h.service.UserServiceInterface.ExtendSessionTimeout(cookie.Value)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusInternalServerError, errors.New("Session could not be extended"))
+			return
+		}
+		err = helpers.SessionCookieExtend(r, w, expTime)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		// Fetch users with "pending" role to be approved
 		pendingUsers, err := h.service.UserServiceInterface.GetUsersByRole("pending")
 		if err != nil {
-			helpers.ErrorHandler(w, http.StatusBadRequest, errors.New("PEDNING USERS were not found"))
+			helpers.ErrorHandler(w, http.StatusBadRequest, errors.New("PENDING USERS were not found"))
+			return
 		}
+
 		data := templateData{
 			AllRequests: pendingUsers,
 		}
+
 		helpers.RenderTemplate(w, adminPagePath, data)
 		return
+
 	default:
-		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("in Admin Page Handler"))
+		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("Invalid request method"))
 		return
 	}
 }

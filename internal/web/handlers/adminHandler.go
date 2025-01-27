@@ -135,23 +135,64 @@ func (h *Handler) ApproveRejectModeratorHandler(w http.ResponseWriter, r *http.R
 
 func (h *Handler) ManageModeratorsHandler(w http.ResponseWriter, r *http.Request) {
 	adminModeratorListPath := "internal/web/templates/moderatorListPage.html"
+
 	type templateData struct {
 		AllModerators []*models.User
 	}
 
 	switch r.Method {
 	case "GET":
+		// Validate session and admin role
+		cookie := helpers.SessionCookieGet(r)
+		if cookie == nil {
+			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("unauthorized: missing session cookie"))
+			return
+		}
+
+		session, err := h.service.UserServiceInterface.GetSession(cookie.Value)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("unauthorized: invalid session"))
+			return
+		}
+
+		user, err := h.service.UserServiceInterface.GetUserByUserID(session.UserID)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("unauthorized: user not found"))
+			return
+		}
+
+		if user.Role != "admin" {
+			helpers.ErrorHandler(w, http.StatusForbidden, errors.New("access denied: only admins can manage moderators"))
+			return
+		}
+
+		// Extend session timeout
+		expTime, err := h.service.UserServiceInterface.ExtendSessionTimeout(cookie.Value)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusInternalServerError, errors.New("failed to extend session timeout"))
+			return
+		}
+		err = helpers.SessionCookieExtend(r, w, expTime)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		// Fetch moderators
 		moderatorUsers, err := h.service.UserServiceInterface.GetUsersByRole("moderator")
 		if err != nil {
-			helpers.ErrorHandler(w, http.StatusBadRequest, errors.New("PEDNING USERS were not found"))
+			helpers.ErrorHandler(w, http.StatusBadRequest, errors.New("moderators were not found"))
+			return
 		}
+
 		data := templateData{
 			AllModerators: moderatorUsers,
 		}
+
 		helpers.RenderTemplate(w, adminModeratorListPath, data)
 		return
 	default:
-		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("in Admin Page Handler"))
+		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("invalid method"))
 		return
 	}
 }
@@ -204,6 +245,43 @@ func (h *Handler) AdminDisplayCategoriesHandler(w http.ResponseWriter, r *http.R
 
 	switch r.Method {
 	case "GET":
+
+		// Validate session and admin role
+		cookie := helpers.SessionCookieGet(r)
+		if cookie == nil {
+			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("unauthorized: missing session cookie"))
+			return
+		}
+
+		session, err := h.service.UserServiceInterface.GetSession(cookie.Value)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("unauthorized: invalid session"))
+			return
+		}
+
+		user, err := h.service.UserServiceInterface.GetUserByUserID(session.UserID)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("unauthorized: user not found"))
+			return
+		}
+
+		if user.Role != "admin" {
+			helpers.ErrorHandler(w, http.StatusForbidden, errors.New("access denied: only admins can manage categories"))
+			return
+		}
+
+		// Extend session timeout
+		expTime, err := h.service.UserServiceInterface.ExtendSessionTimeout(cookie.Value)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusInternalServerError, errors.New("failed to extend session timeout"))
+			return
+		}
+		err = helpers.SessionCookieExtend(r, w, expTime)
+		if err != nil {
+			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
+			return
+		}
+
 		categories, err := h.service.PostServiceInterface.GetAllCategories()
 		// fmt.Println(categories)
 		if err != nil {

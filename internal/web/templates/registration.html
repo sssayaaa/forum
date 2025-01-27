@@ -127,7 +127,6 @@
     </style>
 </head>
 <body>
-
     <!-- Header -->
     <div class="header-container">
         <h1>My Forum</h1>
@@ -139,7 +138,7 @@
     <!-- Registration Form -->
     <div class="registration-container">
         <h2>Registration</h2>
-        <form action="/registration" method="post">
+        <form id="registrationForm" method="post">
             <label for="firstName">First Name:</label><br>
             <input type="text" id="firstName" name="firstName" required><br><br>
 
@@ -164,5 +163,30 @@
         <a href="/" class="back-button">Homepage</a>
     </div>
 
+    <script>
+        document.getElementById('registrationForm').addEventListener('submit', async function(event) {
+            event.preventDefault();  // Prevent the default form submission
+
+            let formData = new FormData(this);
+
+            try {
+                const response = await fetch('/registration', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    alert(result.errors.join('\n'));  // Show error messages in an alert
+                } else {
+                    alert(result.message);
+                    window.location.href = '/login';  // Redirect to login page on success
+                }
+            } catch (error) {
+                alert("An unexpected error occurred. Please try again.");
+            }
+        });
+    </script>
 </body>
 </html>

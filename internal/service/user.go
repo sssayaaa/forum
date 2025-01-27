@@ -66,7 +66,6 @@ func (userObj *UserServiceImpl) Login(email, password string, admin bool) (*mode
 		return nil, errors.New("Provided Email is Incorrect or doesn't exist")
 	}
 
-
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return nil, errors.New("Provided Password is Incorrect")
 	}

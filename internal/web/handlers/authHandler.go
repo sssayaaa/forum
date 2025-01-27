@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"forum/internal/models"
 	helpers "forum/internal/web/handlers/helpers"
 	"net/http"
@@ -19,33 +18,86 @@ func (h *Handler) RegistrationHandler(w http.ResponseWriter, r *http.Request) {
 		helpers.RenderTemplate(w, registerPath, nil)
 		return
 	case "POST":
-		psw, _ := bcrypt.GenerateFromPassword([]byte(r.FormValue("password")), bcrypt.DefaultCost)
+
+		var validationErrors []string
+
+		// Retrieve form values
+		firstName := r.FormValue("firstName")
+		secondName := r.FormValue("secondName")
+		username := r.FormValue("username")
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+
+		// Input validation
+		if firstName == "" {
+			validationErrors = append(validationErrors, "First Name is required.")
+		}
+		if secondName == "" {
+			validationErrors = append(validationErrors, "Second Name is required.")
+		}
+		if username == "" {
+			validationErrors = append(validationErrors, "Username is required.")
+		}
+		if email == "" {
+			validationErrors = append(validationErrors, "Email is required.")
+		}
+		if password == "" {
+			validationErrors = append(validationErrors, "Password is required.")
+		}
+
+		if len(validationErrors) > 0 {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"errors":  validationErrors,
+			})
+			return
+		}
+
+		// Encrypt password
+		psw, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		var userRole string
 		admin := r.FormValue("admin") == "on"
 		if admin {
-			fmt.Println("Registration of ADMIN")
 			userRole = "admin"
 		} else {
 			userRole = "user"
 		}
 
 		user := &models.User{
-			FirstName:  r.FormValue("firstName"),
-			SecondName: r.FormValue("secondName"),
-			Username:   r.FormValue("username"),
-			Email:      r.FormValue("email"),
+			FirstName:  firstName,
+			SecondName: secondName,
+			Username:   username,
+			Email:      email,
 			Password:   string(psw),
 			Role:       userRole,
 		}
 
 		statusCode, id, err := h.service.UserServiceInterface.CreateUser(user)
 		if err != nil {
-			helpers.ErrorHandler(w, statusCode, err)
+			validationErrors = append(validationErrors, err.Error())
+
+			// Use the statusCode to set appropriate HTTP response
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(statusCode)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"errors":  validationErrors,
+			})
 			return
 		}
+
 		user.UserUserID = id
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+
+		// Respond with success JSON message
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": true,
+			"message": "Registration successful! Redirecting to login...",
+		})
 		return
+
 	default:
 		helpers.ErrorHandler(w, http.StatusMethodNotAllowed, errors.New("Error in Registration Handler"))
 		return

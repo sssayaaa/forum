@@ -242,6 +242,7 @@ func (postObj *PostServiceImpl) AddImagesToPost(files *multipart.FileHeader) (st
 }
 
 func (postObj *PostServiceImpl) DeletePost(postID int) error {
+	// fmt.Println(postID)
 	err := postObj.repo.DeletePostByID(postID)
 	if err != nil {
 		return err

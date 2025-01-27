@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"forum/internal/models"
 	helpers "forum/internal/web/handlers/helpers"
 	"io"
@@ -249,11 +250,11 @@ func getFiltersFieldFromURL(url string) string {
 }
 
 func (h *Handler) DeletePostHandler(w http.ResponseWriter, r *http.Request) {
-	// fmt.Println("DELETETETETEE")
+	fmt.Println("DELETE")
 
 	switch r.Method {
 	case "POST":
-		// fmt.Println("INSIDE DELETE HANDLER OF POST")
+		fmt.Println("INSIDE DELETE HANDLER OF POST")
 		cookie := helpers.SessionCookieGet(r)
 		if cookie == nil {
 			helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("couldn't get the cookie in the Post Creation Handler"))
@@ -275,7 +276,7 @@ func (h *Handler) DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 			helpers.ErrorHandler(w, http.StatusInternalServerError, err)
 			return
 		}
-		// fmt.Println("POST ID: ", postID)
+		fmt.Println("POST ID: ", postID, "calling service method")
 		err = h.service.PostServiceInterface.DeletePost(intPostID)
 		if err != nil {
 			helpers.ErrorHandler(w, http.StatusInternalServerError, errors.New("failed when was deleting the post"))

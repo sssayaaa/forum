@@ -36,6 +36,31 @@ make stop
 make remove
 ```
 
+### Docker usage
+
+Building the Docker
+
+```CMD/Terminal
+docker build -t forum .
+```
+
+Run Docker
+
+```CMD/Terminal
+docker run --name=forum -p 8080:8080 --rm forum
+```
+
+Check the Container
+
+```CMD/Terminal
+docker ps -a
+```
+
+Stop the container
+
+```CMD/Terminal
+docker stop forum
+
 ### Usage
 
 Cloning repository
@@ -73,12 +98,5 @@ password: admin
 
 # Authors:
 
-dabduali & ssainova & aospanova
+dabduali & ssainova
 
-# Notes
-
-- Fix Notifications
-- Flash errors
-- buttons are different styles it is driving me nuts
-- admin log in
-- commented posts tab

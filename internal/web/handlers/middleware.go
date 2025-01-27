@@ -12,7 +12,7 @@ func (h *Handler) CheckCookieMiddleware(someHandler http.HandlerFunc) http.Handl
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie(cookieName)
 		if err != nil && c != nil {
-			helpers.ErrorHandler(w, http.StatusInternalServerError, errors.New("Error with Cookie11!!!"))
+			helpers.ErrorHandler(w, http.StatusInternalServerError, errors.New("Error with Cookie!!!"))
 			return
 		}
 		if c != nil {

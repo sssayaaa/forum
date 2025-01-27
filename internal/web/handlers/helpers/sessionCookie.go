@@ -36,7 +36,6 @@ func SessionCookieSet(w http.ResponseWriter, token string, expirationTime time.T
 	http.SetCookie(w, &cookie)
 }
 
-// TODO: Handle Errors where we are using this fucntion
 func SessionCookieExtend(r *http.Request, w http.ResponseWriter, expirationTime time.Time) error {
 	cookie, err := r.Cookie(cookieName)
 	if err != nil {

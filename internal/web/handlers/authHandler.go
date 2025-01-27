@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"forum/internal/models"
@@ -64,23 +65,56 @@ func (h *Handler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		admin := r.FormValue("admin") == "on"
 
-		session, err := h.service.UserServiceInterface.Login(email, password, admin)
-		if err != nil {
-			helpers.ErrorHandler(w, http.StatusForbidden, err)
-			return
-		} 
+		var validationErrors []string
 
-		helpers.SessionCookieSet(w, session.Token, session.ExpTime)
+		if email == "" {
+			validationErrors = append(validationErrors, "Email is required.")
+		}
+		if password == "" {
+			validationErrors = append(validationErrors, "Password is required.")
+		}
 
-		if admin {
-			http.Redirect(w, r, "/admin_page", http.StatusSeeOther)
-			return
-		} else {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
+		if len(validationErrors) > 0 {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"errors":  validationErrors,
+			})
 			return
 		}
 
+		session, err := h.service.UserServiceInterface.Login(email, password, admin)
+		if err != nil {
+			validationErrors = append(validationErrors, err.Error())
+		}
 
+		if len(validationErrors) > 0 {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"errors":  validationErrors,
+			})
+			return
+		}
+
+		helpers.SessionCookieSet(w, session.Token, session.ExpTime)
+
+		// if admin {
+		// 	http.Redirect(w, r, "/admin_page", http.StatusSeeOther)
+		// 	return
+		// } else {
+		// 	http.Redirect(w, r, "/", http.StatusSeeOther)
+		// 	return
+		// }
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": true,
+			"message": "Login successful! Redirecting...",
+		})
+		return
 
 	default:
 		helpers.ErrorHandler(w, http.StatusUnauthorized, errors.New("Error in Login Handler"))

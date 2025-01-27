@@ -65,7 +65,7 @@ func (userObj *UserServiceImpl) Login(email, password string, admin bool) (*mode
 		log.Printf("Login: GetUserByEmail: %v", err)
 		return nil, errors.New("Provided Email is Incorrect or doesn't exist")
 	}
-	// fmt.Println("USERNAME: ", user.Username)
+
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		return nil, errors.New("Provided Password is Incorrect")
@@ -141,8 +141,6 @@ func (userObj *UserServiceImpl) isPasswordValid(user *models.User) error {
 	return nil
 }
 
-// ! Эта функция на самом деле проверяет на пустоту куки, по этому должна называтся по другому
-// ! IsUserLoggedIn - Это название обозначает что она проверяет куки на существование пользоватля
 func (userObj *UserServiceImpl) IsUserLoggedIn(r *http.Request) bool {
 	cookie := helpers.SessionCookieGet(r)
 	return cookie != nil && cookie.Value != ""

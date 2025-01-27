@@ -129,18 +129,49 @@
     <!-- Login Form -->
     <div class="login-container">
         <h2>Login</h2>
-        <form action="/login" method="post">
+    
+        <form id="loginForm" method="post">
             <label for="email">Email:</label><br>
             <input type="email" id="email" name="email" required><br><br>
+    
             <label for="password">Password:</label><br>
             <input type="password" id="password" name="password" required><br><br>
+    
             <input type="checkbox" id="admin" name="admin"> Login as Admin<br><br>
+    
             <input type="submit" value="Login">
         </form>
+    
         <a href="/auth/google/in" class="oauth-button">Sign In with Google</a>
         <a href="/auth/github/in" class="oauth-button">Sign In with Github</a>
         <a href="/" class="back-button">Homepage</a>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Prevent normal form submission
+
+        let formData = new FormData(this);
+
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                alert(result.errors.join('\n')); // Show errors as alerts
+            } else {
+                alert(result.message);
+                window.location.href = '/';  // Redirect on success
+            }
+        } catch (error) {
+            alert("An unexpected error occurred. Please try again.");
+            }
+        });
+    </script>
 
 </body>
 </html>

@@ -1,15 +1,5 @@
 # Forum 01 project
 
-### Forum authentification
-
-### Forum image upload
-
-### Forum advanced features
-
-### Forum moderation
-
-### Forum security
-
 For communication within the forum:
 
 - Only registered users can create posts and comments.
